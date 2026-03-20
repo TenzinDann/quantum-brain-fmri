@@ -7,7 +7,7 @@ export default defineConfig(({ mode }) => {
     return {
       // TODO: 部署到 GitHub Pages 时，将此处替换为你的 GitHub 仓库名（例如 '/quantum-brain/'）。
       // 如果你的仓库名刚好是 "你的用户名.github.io"，请将这里改为 '/'
-      base: '/YOUR_REPOSITORY_NAME_HERE/', 
+      base: 'https://tenzindann.github.io/quantum-brain-fmri/', 
       server: {
         port: 3000,
         host: '0.0.0.0',
