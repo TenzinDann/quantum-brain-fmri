@@ -39,7 +39,7 @@ const QuantumBrain = () => {
   const groupRef = useRef<THREE.Group>(null);
   const pointsRef = useRef<THREE.Points>(null);
   
-  const particlesCount = 20000;
+  const particlesCount = 15000;
   const { positions, colors } = useMemo(() => {
     const nextPositions = new Float32Array(particlesCount * 3);
     const nextColors = new Float32Array(particlesCount * 3);
