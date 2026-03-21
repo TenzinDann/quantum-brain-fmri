@@ -43,6 +43,12 @@ const QuantumBrain = () => {
   const { positions, colors } = useMemo(() => {
     const nextPositions = new Float32Array(particlesCount * 3);
     const nextColors = new Float32Array(particlesCount * 3);
+    let minX = Infinity;
+    let minY = Infinity;
+    let minZ = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    let maxZ = -Infinity;
 
     for (let i = 0; i < particlesCount; i++) {
       const region = Math.random();
@@ -51,105 +57,126 @@ const QuantumBrain = () => {
       let y = 0;
       let z = 0;
 
-      // Build a more recognizable "classic brain" silhouette:
-      // hemispheres + central fissure + cerebellum + brainstem.
-      if (region < 0.84) {
-        // Cerebral hemispheres (dominant mass)
+      // Cartoon-style brain silhouette:
+      // rounder hemispheres + clear center fissure + compact cerebellum + slim brainstem.
+      if (region < 0.86) {
         const side = Math.random() > 0.5 ? 1 : -1;
         const theta = Math.random() * Math.PI * 2;
         const phi = Math.acos(2 * Math.random() - 1);
-        const shell = 0.52 + Math.pow(Math.random(), 0.32) * 0.48;
+        const shell = 0.6 + Math.pow(Math.random(), 0.38) * 0.4;
 
-        // Base ellipsoid, then split into left/right hemispheres.
-        x = 1.55 * Math.sin(phi) * Math.cos(theta);
-        y = 1.18 * Math.cos(phi);
-        z = 1.45 * Math.sin(phi) * Math.sin(theta);
+        // Rounder, friendlier volume proportions.
+        x = 1.38 * Math.sin(phi) * Math.cos(theta);
+        y = 1.12 * Math.cos(phi);
+        z = 1.28 * Math.sin(phi) * Math.sin(theta);
 
-        x = (Math.abs(x) + 0.23) * side;
+        x = (Math.abs(x) + 0.24) * side;
         x *= shell;
         y *= shell;
         z *= shell;
 
-        // Macro lobe shaping: frontal/top fuller, temporal lower bulge, posterior taper.
-        if (z > 0.35) { x *= 1.06; y *= 1.08; }
-        if (y < -0.12 && z > -0.55) { x *= 1.14; }
-        if (z < -0.95) { x *= 0.92; y *= 0.93; z *= 1.05; }
+        // Cartoon macro shaping.
+        if (z > 0.25) { x *= 1.08; y *= 1.06; }
+        if (y < -0.08 && z > -0.6) { x *= 1.1; y *= 0.92; }
+        if (z < -0.95) { x *= 0.94; y *= 0.92; z *= 1.06; }
 
-        // Slightly flatten lower cortex to get a familiar profile.
-        y *= (0.96 + 0.08 * Math.tanh((y + 0.15) * 2));
+        // Flatten base slightly.
+        y *= (0.95 + 0.08 * Math.tanh((y + 0.12) * 2.2));
 
-        // Enforce central fissure by nudging points away from midline.
-        const fissureStrength = Math.exp(-Math.pow(Math.abs(x) - 0.25, 2) / 0.02) * 0.11;
+        // Stronger center fissure for a classic "two-lobe" read.
+        const fissureStrength = Math.exp(-Math.pow(Math.abs(x) - 0.22, 2) / 0.018) * 0.14;
         x += side * fissureStrength;
 
-        // Gyri/Sulci relief, stronger near surface.
-        const surfaceWeight = (shell - 0.52) / 0.48;
+        // Smoother folds than realistic model for a stylized/cartoon look.
+        const surfaceWeight = (shell - 0.6) / 0.4;
         const folds =
-          Math.sin((x * 2.4 + z * 3.1) * 3.2) *
-          Math.cos((y * 3.4 - z * 1.9) * 2.6);
-        const microFolds = Math.sin((x - y + z) * 11.0) * Math.cos((x + z) * 8.0);
-        const displacement = 1 + (folds * 0.11 + microFolds * 0.025) * surfaceWeight;
+          Math.sin((x * 1.9 + z * 2.3) * 2.4) *
+          Math.cos((y * 2.3 - z * 1.4) * 2.1);
+        const microFolds = Math.sin((x - y + z) * 7.8) * Math.cos((x + z) * 6.3);
+        const displacement = 1 + (folds * 0.075 + microFolds * 0.018) * Math.max(0, surfaceWeight);
 
         x *= displacement;
         y *= displacement;
         z *= displacement;
-      } else if (region < 0.94) {
-        // Cerebellum: compact lobe behind and below cortex.
+      } else if (region < 0.96) {
+        // Cerebellum.
         const side = Math.random() > 0.5 ? 1 : -1;
         const theta = Math.random() * Math.PI * 2;
         const phi = Math.acos(2 * Math.random() - 1);
-        const shell = 0.58 + Math.pow(Math.random(), 0.45) * 0.42;
+        const shell = 0.6 + Math.pow(Math.random(), 0.5) * 0.4;
 
-        x = (Math.abs(0.62 * Math.sin(phi) * Math.cos(theta)) + 0.2) * side * shell;
-        y = (-0.7 + 0.55 * Math.cos(phi)) * shell;
-        z = (-1.1 + 0.6 * Math.sin(phi) * Math.sin(theta)) * shell;
+        x = (Math.abs(0.58 * Math.sin(phi) * Math.cos(theta)) + 0.18) * side * shell;
+        y = (-0.74 + 0.5 * Math.cos(phi)) * shell;
+        z = (-1.06 + 0.55 * Math.sin(phi) * Math.sin(theta)) * shell;
 
-        const folds = Math.sin((x * 10 + z * 9)) * Math.cos(y * 11);
-        const displacement = 1 + folds * 0.045;
+        const folds = Math.sin((x * 8.3 + z * 8.1)) * Math.cos(y * 8.9);
+        const displacement = 1 + folds * 0.032;
         x *= displacement;
         y *= displacement;
         z *= displacement;
       } else {
-        // Brainstem: narrow vertical structure under cerebrum.
+        // Brainstem.
         const t = Math.random();
         const angle = Math.random() * Math.PI * 2;
-        const radius = (1 - t) * 0.12 + 0.04;
+        const radius = (1 - t) * 0.11 + 0.045;
         x = Math.cos(angle) * radius;
-        y = -1.05 - t * 0.9;
-        z = -0.72 + Math.sin(angle) * radius * 0.55;
+        y = -1.02 - t * 0.86;
+        z = -0.72 + Math.sin(angle) * radius * 0.5;
       }
 
       nextPositions[i * 3] = x;
       nextPositions[i * 3 + 1] = y;
       nextPositions[i * 3 + 2] = z;
+      minX = Math.min(minX, x);
+      minY = Math.min(minY, y);
+      minZ = Math.min(minZ, z);
+      maxX = Math.max(maxX, x);
+      maxY = Math.max(maxY, y);
+      maxZ = Math.max(maxZ, z);
 
       // Keep the original soft luminous palette, with slight regional distinction.
-      if (region >= 0.94) {
-        // Brainstem: cooler white
-        nextColors[i * 3] = 0.96;
-        nextColors[i * 3 + 1] = 0.98;
+      if (region >= 0.96) {
+        // Brainstem (cool white)
+        nextColors[i * 3] = 0.95;
+        nextColors[i * 3 + 1] = 0.97;
         nextColors[i * 3 + 2] = 1.0;
-      } else if (region >= 0.84) {
-        // Cerebellum: warm pale tone
+      } else if (region >= 0.86) {
+        // Cerebellum (warm tint)
         nextColors[i * 3] = 1.0;
-        nextColors[i * 3 + 1] = 0.95;
-        nextColors[i * 3 + 2] = 0.93;
+        nextColors[i * 3 + 1] = 0.9;
+        nextColors[i * 3 + 2] = 0.84;
       } else {
+        // Main cortex: pastel cartoon palette
         const mix = Math.random();
-        if (mix > 0.66) {
-          nextColors[i * 3] = 1.0;
-          nextColors[i * 3 + 1] = 0.92;
-          nextColors[i * 3 + 2] = 0.96;
-        } else if (mix > 0.33) {
-          nextColors[i * 3] = 0.94;
-          nextColors[i * 3 + 1] = 0.92;
+        if (mix > 0.75) {
+          nextColors[i * 3] = 1.0;   // pink
+          nextColors[i * 3 + 1] = 0.82;
+          nextColors[i * 3 + 2] = 0.91;
+        } else if (mix > 0.5) {
+          nextColors[i * 3] = 0.84;  // lilac
+          nextColors[i * 3 + 1] = 0.79;
+          nextColors[i * 3 + 2] = 1.0;
+        } else if (mix > 0.25) {
+          nextColors[i * 3] = 0.81;  // blue
+          nextColors[i * 3 + 1] = 0.89;
           nextColors[i * 3 + 2] = 1.0;
         } else {
-          nextColors[i * 3] = 0.92;
-          nextColors[i * 3 + 1] = 0.96;
-          nextColors[i * 3 + 2] = 1.0;
+          nextColors[i * 3] = 1.0;   // peach highlight
+          nextColors[i * 3 + 1] = 0.88;
+          nextColors[i * 3 + 2] = 0.78;
         }
       }
+    }
+
+    // Auto-center to keep model visually level and centered.
+    const centerX = (minX + maxX) * 0.5;
+    const centerY = (minY + maxY) * 0.5;
+    const centerZ = (minZ + maxZ) * 0.5;
+    for (let i = 0; i < particlesCount; i++) {
+      nextPositions[i * 3] -= centerX;
+      // Keep a slight upward placement so brainstem doesn't dominate center.
+      nextPositions[i * 3 + 1] -= centerY * 0.7;
+      nextPositions[i * 3 + 2] -= centerZ;
     }
 
     return { positions: nextPositions, colors: nextColors };
@@ -159,12 +186,12 @@ const QuantumBrain = () => {
     if (groupRef.current) {
       const t = state.clock.getElapsedTime();
       groupRef.current.rotation.y = t * 0.12;
-      groupRef.current.rotation.x = Math.sin(t * 0.2) * 0.1;
+      groupRef.current.rotation.x = Math.sin(t * 0.18) * 0.04;
+      groupRef.current.rotation.z = 0;
+      groupRef.current.position.x = 0;
       groupRef.current.position.y = Math.sin(t * 0.4) * 0.15;
     }
-    if (pointsRef.current) {
-      pointsRef.current.rotation.z = state.clock.getElapsedTime() * 0.03;
-    }
+    if (pointsRef.current) pointsRef.current.rotation.z = 0;
   });
 
   return (
@@ -185,20 +212,21 @@ const QuantumBrain = () => {
           />
         </bufferGeometry>
         <pointsMaterial
-          size={0.03}
+          size={0.036}
           vertexColors
           transparent
-          opacity={0.85}
+          opacity={0.92}
           sizeAttenuation
-          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+          blending={THREE.NormalBlending}
         />
       </points>
       
       {/* Soft internal glow */}
-      <Sphere args={[0.8, 32, 32]}>
-        <meshBasicMaterial color="#ffffff" transparent opacity={0.1} />
+      <Sphere args={[0.92, 32, 32]}>
+        <meshBasicMaterial color="#f5e9ff" transparent opacity={0.14} />
       </Sphere>
-      <pointLight intensity={1.5} distance={3} color="#ffffff" />
+      <pointLight intensity={1.25} distance={3.5} color="#f6f0ff" />
     </group>
   );
 };
@@ -255,10 +283,10 @@ export const HeroScene: React.FC = () => {
         <pointLight position={[0, 5, -5]} intensity={1.5} color="#ffe0f0" /> {/* Soft pink back */}
         <spotLight position={[0, 10, 0]} intensity={1} angle={0.5} penumbra={1} color="#ffffff" />
         
-        <Float speed={1.0} rotationIntensity={0.1} floatIntensity={0.3}>
+        <Float speed={0.9} rotationIntensity={0} floatIntensity={0.24}>
           <QuantumBrain />
           {/* Very subtle neural connections */}
-          {[...Array(20)].map((_, i) => (
+          {[...Array(12)].map((_, i) => (
             <NeuralConnection key={i} />
           ))}
         </Float>
