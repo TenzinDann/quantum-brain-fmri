@@ -39,7 +39,7 @@ const QuantumBrain = () => {
   const groupRef = useRef<THREE.Group>(null);
   const pointsRef = useRef<THREE.Points>(null);
   
-  const particlesCount = 12000;
+  const particlesCount = 10000;
   const { positions, colors } = useMemo(() => {
     const nextPositions = new Float32Array(particlesCount * 3);
     const nextColors = new Float32Array(particlesCount * 3);
@@ -195,7 +195,7 @@ const QuantumBrain = () => {
   });
 
   return (
-    <group ref={groupRef} scale={[1.2, 1.2, 1.2]}>
+    <group ref={groupRef} scale={[1.12, 1.12, 1.12]}>
       <points ref={pointsRef}>
         <bufferGeometry>
           <bufferAttribute
@@ -212,7 +212,7 @@ const QuantumBrain = () => {
           />
         </bufferGeometry>
         <pointsMaterial
-          size={0.046}
+          size={0.015}
           vertexColors
           transparent
           opacity={0.98}
