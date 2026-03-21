@@ -22,6 +22,7 @@ const AuthorCard = ({ name, role, delay }: { name: string, role: string, delay: 
 const App: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const logoSrc = `${import.meta.env.BASE_URL}logo.svg`;
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -54,7 +55,7 @@ const App: React.FC = () => {
         <div className="container mx-auto px-6 flex justify-between items-center">
           <div className="flex items-center gap-3 text-stone-900 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             <img
-              src="/logo.svg"
+              src={logoSrc}
               alt="Site logo"
               className="block h-[1.55em] w-[1.55em] object-contain"
               style={{ filter: 'brightness(0)' }}
@@ -298,9 +299,10 @@ const App: React.FC = () => {
       <footer className="bg-stone-900 py-20">
         <div className="container mx-auto px-6 flex justify-center items-center">
           <img
-            src="/logo.svg"
+            src={logoSrc}
             alt="Footer logo"
             className="h-20 w-20 object-contain"
+            style={{ filter: 'brightness(0) invert(1)' }}
           />
         </div>
       </footer>
