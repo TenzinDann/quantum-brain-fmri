@@ -6,8 +6,8 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
 
   return {
-    // Keep root-relative assets to avoid accidental hardcoded external domains.
-    base: '/',
+    // Use relative asset paths for reliable GitHub Pages project-site loading.
+    base: './',
     server: {
       port: 3000,
       host: '0.0.0.0',
