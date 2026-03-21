@@ -70,7 +70,7 @@ const QuantumBrain = () => {
         y = 1.12 * Math.cos(phi);
         z = 1.36 * Math.sin(phi) * Math.sin(theta);
 
-        x = (Math.abs(x) + 0.05) * side;
+        x = (Math.abs(x) + 0.1) * side;
         x *= shell;
         y *= shell;
         z *= shell;
@@ -98,7 +98,7 @@ const QuantumBrain = () => {
         // Soften the fissure as we move backward, so the rear contour stays full.
         const backFissureFade = 1 - posteriorWeight * 0.65;
         const fissureStrength =
-          Math.exp(-Math.pow(Math.abs(x) - 0.09, 2) / 0.03) * 0.035 * backFissureFade;
+          Math.exp(-Math.pow(Math.abs(x) - 0.12, 2) / 0.026) * 0.055 * backFissureFade;
         x += side * fissureStrength;
 
         // Smoother folds than realistic model for a stylized/cartoon look.
@@ -119,7 +119,7 @@ const QuantumBrain = () => {
         const phi = Math.acos(2 * Math.random() - 1);
         const shell = 0.6 + Math.pow(Math.random(), 0.5) * 0.4;
 
-        x = (Math.abs(0.58 * Math.sin(phi) * Math.cos(theta)) + 0.05) * side * shell;
+        x = (Math.abs(0.58 * Math.sin(phi) * Math.cos(theta)) + 0.1) * side * shell;
         y = (-0.74 + 0.5 * Math.cos(phi)) * shell;
         z = (-1.06 + 0.55 * Math.sin(phi) * Math.sin(theta)) * shell;
 
