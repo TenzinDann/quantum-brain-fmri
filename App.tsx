@@ -1,4 +1,4 @@
-
+﻿
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -52,8 +52,21 @@ const App: React.FC = () => {
       {/* Navigation */}
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-[#e8eaff]/90 backdrop-blur-md shadow-sm py-4' : 'bg-transparent py-6'}`}>
         <div className="container mx-auto px-6 flex justify-between items-center">
-          <div className="flex items-center gap-4 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <div className="w-8 h-8 bg-nobel-gold rounded-full flex items-center justify-center text-white font-serif font-bold text-xl shadow-sm pb-1">α</div>
+          <div className="flex items-center gap-3 text-stone-900 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+            <div
+              className="block h-[1.55em] w-[1.55em] bg-current"
+              aria-label="Site logo"
+              style={{
+                WebkitMaskImage: 'url(/logo.svg)',
+                maskImage: 'url(/logo.svg)',
+                WebkitMaskRepeat: 'no-repeat',
+                maskRepeat: 'no-repeat',
+                WebkitMaskSize: 'contain',
+                maskSize: 'contain',
+                WebkitMaskPosition: 'center',
+                maskPosition: 'center',
+              }}
+            />
             <span className={`font-serif font-bold text-lg tracking-wide transition-opacity ${scrolled ? 'opacity-100' : 'opacity-0 md:opacity-100'}`}>
               ALPHAQUBIT <span className="font-normal text-stone-500">2024</span>
             </span>
@@ -108,7 +121,7 @@ const App: React.FC = () => {
 
         <div className="relative z-10 container mx-auto px-6 text-center">
           <div className="inline-block mb-4 px-3 py-1 border border-nobel-gold text-nobel-gold text-xs tracking-[0.2em] uppercase font-bold rounded-full backdrop-blur-sm bg-white/30">
-            Nature • Nov 2024
+            Nature 鈥?Nov 2024
           </div>
           <h1 className="font-serif text-5xl md:text-7xl lg:text-9xl font-medium leading-tight md:leading-[0.9] mb-8 text-stone-900 drop-shadow-sm">
             AlphaQubit <br/><span className="italic font-normal text-stone-600 text-3xl md:text-5xl block mt-4">AI for Quantum Error Correction</span>
@@ -142,7 +155,7 @@ const App: React.FC = () => {
                 <span className="text-5xl float-left mr-3 mt-[-8px] font-serif text-nobel-gold">B</span>uilding a large-scale quantum computer requires correcting the errors that inevitably arise in physical systems. The state of the art is the <strong>surface code</strong>, which encodes information redundantly across many physical qubits.
               </p>
               <p>
-                However, interpreting the noisy signals from these codes—a task called "decoding"—is a massive challenge. Complex noise effects like cross-talk and leakage confuse standard algorithms. <strong className="text-stone-900 font-medium">AlphaQubit</strong> uses machine learning to learn these complex error patterns directly from the quantum processor, achieving accuracy far beyond human-designed algorithms.
+                However, interpreting the noisy signals from these codes鈥攁 task called "decoding"鈥攊s a massive challenge. Complex noise effects like cross-talk and leakage confuse standard algorithms. <strong className="text-stone-900 font-medium">AlphaQubit</strong> uses machine learning to learn these complex error patterns directly from the quantum processor, achieving accuracy far beyond human-designed algorithms.
               </p>
             </div>
           </div>
@@ -193,7 +206,7 @@ const App: React.FC = () => {
                             Standard decoders assume simple, independent errors. Real hardware is messier. AlphaQubit treats decoding as a sequence prediction problem, using a <strong>Recurrent Transformer</strong> architecture.
                         </p>
                         <p className="text-lg text-stone-400 leading-relaxed">
-                            It ingests the history of stabilizer measurements and uses "soft" analog information—probabilities rather than just binary 0s and 1s—to make highly informed predictions about logical errors.
+                            It ingests the history of stabilizer measurements and uses "soft" analog information鈥攑robabilities rather than just binary 0s and 1s鈥攖o make highly informed predictions about logical errors.
                         </p>
                      </div>
                 </div>
@@ -238,7 +251,7 @@ const App: React.FC = () => {
                         <p className="font-serif italic text-xl text-stone-800 mb-4">
                             "Our work illustrates the ability of machine learning to go beyond human-designed algorithms by learning from data directly, highlighting machine learning as a strong contender for decoding in quantum computers."
                         </p>
-                        <span className="text-sm font-bold text-stone-500 tracking-wider uppercase">— Bausch et al., Nature (2024)</span>
+                        <span className="text-sm font-bold text-stone-500 tracking-wider uppercase">鈥?Bausch et al., Nature (2024)</span>
                     </div>
                 </div>
              </div>
