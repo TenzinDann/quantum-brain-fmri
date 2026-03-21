@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 
-import React, { useRef } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Float, MeshDistortMaterial, Sphere, Torus, Cylinder, Stars, Environment, Box } from '@react-three/drei';
 import * as THREE from 'three';
@@ -39,77 +39,121 @@ const QuantumBrain = () => {
   const groupRef = useRef<THREE.Group>(null);
   const pointsRef = useRef<THREE.Points>(null);
   
-  // Create brain-like point cloud
   const particlesCount = 12000;
-  const positions = new Float32Array(particlesCount * 3);
-  const colors = new Float32Array(particlesCount * 3);
-  
-  for (let i = 0; i < particlesCount; i++) {
-    // Brain shape logic
-    const isLeft = Math.random() > 0.5;
-    const side = isLeft ? -1 : 1;
-    
-    // Base coordinates
-    const u = Math.random() * Math.PI; // front to back
-    const v = (Math.random() - 0.5) * Math.PI; // bottom to top
-    
-    let x = 1.3 * Math.sin(u) * Math.cos(v);
-    let y = 1.1 * Math.sin(v);
-    let z = 1.6 * Math.cos(u);
-    
-    // Hemisphere separation
-    x = (x * 0.85 + 0.35) * side;
-    
-    // Lobe scaling
-    if (z > 0.5) { x *= 1.1; y *= 1.1; }
-    if (z > -0.5 && z < 0.5 && y < 0) { x *= 1.2; }
-    if (z < -0.8 && y < -0.2) { x *= 0.7; y *= 0.8; z -= 0.1; }
-    
-    // Brainstem logic
-    const isBrainstem = Math.random() > 0.92;
-    if (isBrainstem) {
-      const stemU = Math.random();
-      x = (Math.random() - 0.5) * 0.3;
-      y = -1.0 - stemU * 0.8;
-      z = -0.4 - stemU * 0.2;
+  const { positions, colors } = useMemo(() => {
+    const nextPositions = new Float32Array(particlesCount * 3);
+    const nextColors = new Float32Array(particlesCount * 3);
+
+    for (let i = 0; i < particlesCount; i++) {
+      const region = Math.random();
+
+      let x = 0;
+      let y = 0;
+      let z = 0;
+
+      // Build a more recognizable "classic brain" silhouette:
+      // hemispheres + central fissure + cerebellum + brainstem.
+      if (region < 0.84) {
+        // Cerebral hemispheres (dominant mass)
+        const side = Math.random() > 0.5 ? 1 : -1;
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos(2 * Math.random() - 1);
+        const shell = 0.52 + Math.pow(Math.random(), 0.32) * 0.48;
+
+        // Base ellipsoid, then split into left/right hemispheres.
+        x = 1.55 * Math.sin(phi) * Math.cos(theta);
+        y = 1.18 * Math.cos(phi);
+        z = 1.45 * Math.sin(phi) * Math.sin(theta);
+
+        x = (Math.abs(x) + 0.23) * side;
+        x *= shell;
+        y *= shell;
+        z *= shell;
+
+        // Macro lobe shaping: frontal/top fuller, temporal lower bulge, posterior taper.
+        if (z > 0.35) { x *= 1.06; y *= 1.08; }
+        if (y < -0.12 && z > -0.55) { x *= 1.14; }
+        if (z < -0.95) { x *= 0.92; y *= 0.93; z *= 1.05; }
+
+        // Slightly flatten lower cortex to get a familiar profile.
+        y *= (0.96 + 0.08 * Math.tanh((y + 0.15) * 2));
+
+        // Enforce central fissure by nudging points away from midline.
+        const fissureStrength = Math.exp(-Math.pow(Math.abs(x) - 0.25, 2) / 0.02) * 0.11;
+        x += side * fissureStrength;
+
+        // Gyri/Sulci relief, stronger near surface.
+        const surfaceWeight = (shell - 0.52) / 0.48;
+        const folds =
+          Math.sin((x * 2.4 + z * 3.1) * 3.2) *
+          Math.cos((y * 3.4 - z * 1.9) * 2.6);
+        const microFolds = Math.sin((x - y + z) * 11.0) * Math.cos((x + z) * 8.0);
+        const displacement = 1 + (folds * 0.11 + microFolds * 0.025) * surfaceWeight;
+
+        x *= displacement;
+        y *= displacement;
+        z *= displacement;
+      } else if (region < 0.94) {
+        // Cerebellum: compact lobe behind and below cortex.
+        const side = Math.random() > 0.5 ? 1 : -1;
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos(2 * Math.random() - 1);
+        const shell = 0.58 + Math.pow(Math.random(), 0.45) * 0.42;
+
+        x = (Math.abs(0.62 * Math.sin(phi) * Math.cos(theta)) + 0.2) * side * shell;
+        y = (-0.7 + 0.55 * Math.cos(phi)) * shell;
+        z = (-1.1 + 0.6 * Math.sin(phi) * Math.sin(theta)) * shell;
+
+        const folds = Math.sin((x * 10 + z * 9)) * Math.cos(y * 11);
+        const displacement = 1 + folds * 0.045;
+        x *= displacement;
+        y *= displacement;
+        z *= displacement;
+      } else {
+        // Brainstem: narrow vertical structure under cerebrum.
+        const t = Math.random();
+        const angle = Math.random() * Math.PI * 2;
+        const radius = (1 - t) * 0.12 + 0.04;
+        x = Math.cos(angle) * radius;
+        y = -1.05 - t * 0.9;
+        z = -0.72 + Math.sin(angle) * radius * 0.55;
+      }
+
+      nextPositions[i * 3] = x;
+      nextPositions[i * 3 + 1] = y;
+      nextPositions[i * 3 + 2] = z;
+
+      // Keep the original soft luminous palette, with slight regional distinction.
+      if (region >= 0.94) {
+        // Brainstem: cooler white
+        nextColors[i * 3] = 0.96;
+        nextColors[i * 3 + 1] = 0.98;
+        nextColors[i * 3 + 2] = 1.0;
+      } else if (region >= 0.84) {
+        // Cerebellum: warm pale tone
+        nextColors[i * 3] = 1.0;
+        nextColors[i * 3 + 1] = 0.95;
+        nextColors[i * 3 + 2] = 0.93;
+      } else {
+        const mix = Math.random();
+        if (mix > 0.66) {
+          nextColors[i * 3] = 1.0;
+          nextColors[i * 3 + 1] = 0.92;
+          nextColors[i * 3 + 2] = 0.96;
+        } else if (mix > 0.33) {
+          nextColors[i * 3] = 0.94;
+          nextColors[i * 3 + 1] = 0.92;
+          nextColors[i * 3 + 2] = 1.0;
+        } else {
+          nextColors[i * 3] = 0.92;
+          nextColors[i * 3 + 1] = 0.96;
+          nextColors[i * 3 + 2] = 1.0;
+        }
+      }
     }
-    
-    // Gyri and Sulci
-    const foldFreq = 7.0;
-    const foldAmp = 0.18;
-    const folds = Math.sin(x * foldFreq) * Math.cos(y * foldFreq) * Math.sin(z * foldFreq);
-    const microFolds = Math.sin(x * 15) * Math.cos(y * 15) * 0.04;
-    
-    const displacement = isBrainstem ? 1.0 : (1.0 + (folds * foldAmp) + microFolds);
-    
-    positions[i * 3] = x * displacement;
-    positions[i * 3 + 1] = y * displacement;
-    positions[i * 3 + 2] = z * displacement;
-    
-    // Colors: Very soft pastel palette (Purple, Blue, Pink, Cream)
-    const mix = Math.random();
-    if (isBrainstem) {
-      colors[i * 3] = 0.98; // Off-white/Cream
-      colors[i * 3 + 1] = 0.98;
-      colors[i * 3 + 2] = 0.99;
-    } else if (mix > 0.75) {
-      colors[i * 3] = 1.0; // Very Soft Pink
-      colors[i * 3 + 1] = 0.92;
-      colors[i * 3 + 2] = 0.96;
-    } else if (mix > 0.5) {
-      colors[i * 3] = 0.94; // Very Soft Purple
-      colors[i * 3 + 1] = 0.92;
-      colors[i * 3 + 2] = 1.0;
-    } else if (mix > 0.25) {
-      colors[i * 3] = 0.92; // Very Soft Blue
-      colors[i * 3 + 1] = 0.96;
-      colors[i * 3 + 2] = 1.0;
-    } else {
-      colors[i * 3] = 1.0; // Pure White/Cream
-      colors[i * 3 + 1] = 0.99;
-      colors[i * 3 + 2] = 0.97;
-    }
-  }
+
+    return { positions: nextPositions, colors: nextColors };
+  }, [particlesCount]);
 
   useFrame((state) => {
     if (groupRef.current) {
