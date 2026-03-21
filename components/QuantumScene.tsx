@@ -39,7 +39,7 @@ const QuantumBrain = () => {
   const groupRef = useRef<THREE.Group>(null);
   const pointsRef = useRef<THREE.Points>(null);
   
-  const particlesCount = 80000;
+  const particlesCount = 20000;
   const { positions, colors } = useMemo(() => {
     const nextPositions = new Float32Array(particlesCount * 3);
     const nextColors = new Float32Array(particlesCount * 3);
@@ -68,33 +68,37 @@ const QuantumBrain = () => {
         // Rounder, friendlier volume proportions.
         x = 1.38 * Math.sin(phi) * Math.cos(theta);
         y = 1.12 * Math.cos(phi);
-        z = 1.28 * Math.sin(phi) * Math.sin(theta);
+        z = 1.36 * Math.sin(phi) * Math.sin(theta);
 
         x = (Math.abs(x) + 0.24) * side;
         x *= shell;
         y *= shell;
         z *= shell;
 
-        // Cartoon macro shaping.
+        // Macro shaping tuned toward a more natural brain silhouette.
         if (z > 0.25) { x *= 1.08; y *= 1.06; }
         if (y < -0.08 && z > -0.6) { x *= 1.1; y *= 0.92; }
-        // Keep occipital area full (avoid a "caved in" back view).
-        if (z < -0.95) { x *= 1.05; y *= 1.02; z *= 1.06; }
-        if (z < -0.45) {
-          const backBulge = Math.min(1, (-z - 0.45) / 0.85);
-          x *= 1 + backBulge * 0.07;
-          y *= 1 + backBulge * 0.04;
-          z *= 1 + backBulge * 0.05;
-        }
+        // Fill the posterior (occipital) volume to avoid a concave back.
+        const posteriorWeight = Math.min(1, Math.max(0, (-z - 0.3) / 1.0));
+        x *= 1 + posteriorWeight * 0.12;
+        y *= 1 + posteriorWeight * 0.07;
+        z *= 1 + posteriorWeight * 0.12;
+
+        // Add a smooth occipital dome centered on the back-lower region.
+        const occipitalDome =
+          Math.exp(-Math.pow(z + 1.05, 2) / 0.22) *
+          Math.exp(-Math.pow(y + 0.05, 2) / 0.85);
+        x *= 1 + occipitalDome * 0.08;
+        y *= 1 + occipitalDome * 0.1;
+        z -= occipitalDome * 0.09;
 
         // Flatten base slightly.
         y *= (0.95 + 0.08 * Math.tanh((y + 0.12) * 2.2));
 
-        // Stronger center fissure for a classic "two-lobe" read,
-        // but soften it toward the back to keep the posterior shape rounded.
-        const backFissureFade = z < -0.35 ? 0.7 : 1.0;
+        // Soften the fissure as we move backward, so the rear contour stays full.
+        const backFissureFade = 1 - posteriorWeight * 0.65;
         const fissureStrength =
-          Math.exp(-Math.pow(Math.abs(x) - 0.22, 2) / 0.018) * 0.14 * backFissureFade;
+          Math.exp(-Math.pow(Math.abs(x) - 0.22, 2) / 0.018) * 0.13 * backFissureFade;
         x += side * fissureStrength;
 
         // Smoother folds than realistic model for a stylized/cartoon look.
