@@ -57,7 +57,7 @@ const App: React.FC = () => {
             <img
               src={logoSrc}
               alt="Site logo"
-              className="block h-[1.5em] w-auto object-contain shrink-0"
+              className="block h-[1.4em] w-auto object-contain shrink-0"
               style={{ filter: 'brightness(0)' }}
             />
             <span className={`font-serif font-bold tracking-wide transition-opacity leading-none ${scrolled ? 'opacity-100' : 'opacity-0 md:opacity-100'}`}>
