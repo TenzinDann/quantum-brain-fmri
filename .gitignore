@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local testing artifacts
+.codex-local/
+coverage/
+test-results/
+playwright-report/
