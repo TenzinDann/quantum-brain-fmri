@@ -53,15 +53,15 @@ const App: React.FC = () => {
       {/* Navigation */}
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-[#e8eaff]/90 backdrop-blur-md shadow-sm py-4' : 'bg-transparent py-6'}`}>
         <div className="w-full px-4 md:px-6 flex justify-between items-center">
-          <div className="inline-flex items-center gap-2 text-stone-900 cursor-pointer -ml-1 md:-ml-2 leading-none" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+          <div className="inline-flex items-center gap-2 text-stone-900 text-lg cursor-pointer -ml-1 md:-ml-2 leading-none" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             <img
               src={logoSrc}
               alt="Site logo"
               className="block h-[1em] w-auto object-contain shrink-0"
               style={{ filter: 'brightness(0)' }}
             />
-            <span className={`font-serif font-bold text-lg tracking-wide transition-opacity leading-none ${scrolled ? 'opacity-100' : 'opacity-0 md:opacity-100'}`}>
-              ALPHAQUBIT <span className="font-normal text-stone-500">2024</span>
+            <span className={`font-serif font-bold tracking-wide transition-opacity leading-none ${scrolled ? 'opacity-100' : 'opacity-0 md:opacity-100'}`}>
+              ALPHAQUBIT
             </span>
           </div>
           
@@ -297,7 +297,7 @@ const App: React.FC = () => {
       </main>
 
       <footer className="bg-stone-900">
-        <div className="container mx-auto px-6 flex justify-center items-center pt-24 md:pt-32 lg:pt-40 pb-10 md:pb-14">
+        <div className="container mx-auto px-6 flex justify-center items-center pt-20 md:pt-28 lg:pt-36 pb-10 md:pb-14">
           <img
             src={logoSrc}
             alt="Footer logo"
