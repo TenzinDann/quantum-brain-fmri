@@ -301,7 +301,7 @@ const App: React.FC = () => {
           <img
             src={logoSrc}
             alt="Footer logo"
-            className="h-[88px] w-auto object-contain -translate-y-8 md:-translate-y-10 lg:-translate-y-11"
+            className="h-[88px] w-auto object-contain"
             style={{ filter: 'brightness(0) invert(1)' }}
           />
         </div>
