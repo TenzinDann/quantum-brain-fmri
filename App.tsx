@@ -57,7 +57,7 @@ const App: React.FC = () => {
             <img
               src={logoSrc}
               alt="Site logo"
-              className="block h-[1em] w-auto object-contain shrink-0"
+              className="block h-[1.2em] w-auto object-contain shrink-0"
               style={{ filter: 'brightness(0)' }}
             />
             <span className={`font-serif font-bold tracking-wide transition-opacity leading-none ${scrolled ? 'opacity-100' : 'opacity-0 md:opacity-100'}`}>
@@ -297,7 +297,7 @@ const App: React.FC = () => {
       </main>
 
       <footer className="bg-stone-900">
-        <div className="container mx-auto px-6 flex justify-center items-center pt-20 md:pt-28 lg:pt-36 pb-10 md:pb-14">
+        <div className="container mx-auto px-6 flex justify-center items-center pt-16 md:pt-24 lg:pt-32 pb-10 md:pb-14">
           <img
             src={logoSrc}
             alt="Footer logo"
