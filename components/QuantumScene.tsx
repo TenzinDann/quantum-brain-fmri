@@ -39,7 +39,7 @@ const QuantumBrain = () => {
   const groupRef = useRef<THREE.Group>(null);
   const pointsRef = useRef<THREE.Points>(null);
   
-  const particlesCount = 20000;
+  const particlesCount = 80000;
   const { positions, colors } = useMemo(() => {
     const nextPositions = new Float32Array(particlesCount * 3);
     const nextColors = new Float32Array(particlesCount * 3);
@@ -78,13 +78,23 @@ const QuantumBrain = () => {
         // Cartoon macro shaping.
         if (z > 0.25) { x *= 1.08; y *= 1.06; }
         if (y < -0.08 && z > -0.6) { x *= 1.1; y *= 0.92; }
-        if (z < -0.95) { x *= 0.94; y *= 0.92; z *= 1.06; }
+        // Keep occipital area full (avoid a "caved in" back view).
+        if (z < -0.95) { x *= 1.05; y *= 1.02; z *= 1.06; }
+        if (z < -0.45) {
+          const backBulge = Math.min(1, (-z - 0.45) / 0.85);
+          x *= 1 + backBulge * 0.07;
+          y *= 1 + backBulge * 0.04;
+          z *= 1 + backBulge * 0.05;
+        }
 
         // Flatten base slightly.
         y *= (0.95 + 0.08 * Math.tanh((y + 0.12) * 2.2));
 
-        // Stronger center fissure for a classic "two-lobe" read.
-        const fissureStrength = Math.exp(-Math.pow(Math.abs(x) - 0.22, 2) / 0.018) * 0.14;
+        // Stronger center fissure for a classic "two-lobe" read,
+        // but soften it toward the back to keep the posterior shape rounded.
+        const backFissureFade = z < -0.35 ? 0.7 : 1.0;
+        const fissureStrength =
+          Math.exp(-Math.pow(Math.abs(x) - 0.22, 2) / 0.018) * 0.14 * backFissureFade;
         x += side * fissureStrength;
 
         // Smoother folds than realistic model for a stylized/cartoon look.
