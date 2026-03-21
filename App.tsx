@@ -297,7 +297,7 @@ const App: React.FC = () => {
       </main>
 
       <footer className="bg-stone-900">
-        <div className="container mx-auto px-6 flex justify-center pt-16 md:pt-24 lg:pt-32 pb-10 md:pb-14">
+        <div className="container mx-auto px-6 flex justify-center pt-24 md:pt-32 lg:pt-40 pb-10 md:pb-14">
           <img
             src={logoSrc}
             alt="Footer logo"
