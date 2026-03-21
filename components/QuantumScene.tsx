@@ -195,7 +195,7 @@ const QuantumBrain = () => {
   });
 
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} scale={[1.2, 1.2, 1.2]}>
       <points ref={pointsRef}>
         <bufferGeometry>
           <bufferAttribute
@@ -212,21 +212,21 @@ const QuantumBrain = () => {
           />
         </bufferGeometry>
         <pointsMaterial
-          size={0.036}
+          size={0.046}
           vertexColors
           transparent
-          opacity={0.92}
+          opacity={0.98}
           sizeAttenuation
           depthWrite={false}
-          blending={THREE.NormalBlending}
+          blending={THREE.AdditiveBlending}
         />
       </points>
       
       {/* Soft internal glow */}
-      <Sphere args={[0.92, 32, 32]}>
-        <meshBasicMaterial color="#f5e9ff" transparent opacity={0.14} />
+      <Sphere args={[1.02, 32, 32]}>
+        <meshBasicMaterial color="#f5e9ff" transparent opacity={0.22} />
       </Sphere>
-      <pointLight intensity={1.25} distance={3.5} color="#f6f0ff" />
+      <pointLight intensity={1.9} distance={4.5} color="#f6f0ff" />
     </group>
   );
 };
@@ -277,11 +277,11 @@ export const HeroScene: React.FC = () => {
         <color attach="background" args={['#e8eaff']} />
         
         {/* Atmospheric lighting to match reference image's soft multi-directional glow */}
-        <ambientLight intensity={0.8} />
-        <pointLight position={[10, 10, 10]} intensity={2.5} color="#fff8f0" /> {/* Warm top-right */}
-        <pointLight position={[-10, -5, 5]} intensity={2} color="#e0e5ff" /> {/* Cool bottom-left */}
-        <pointLight position={[0, 5, -5]} intensity={1.5} color="#ffe0f0" /> {/* Soft pink back */}
-        <spotLight position={[0, 10, 0]} intensity={1} angle={0.5} penumbra={1} color="#ffffff" />
+        <ambientLight intensity={1.05} />
+        <pointLight position={[10, 10, 10]} intensity={3.1} color="#fff8f0" /> {/* Warm top-right */}
+        <pointLight position={[-10, -5, 5]} intensity={2.6} color="#e0e5ff" /> {/* Cool bottom-left */}
+        <pointLight position={[0, 5, -5]} intensity={2.1} color="#ffe0f0" /> {/* Soft pink back */}
+        <spotLight position={[0, 10, 0]} intensity={1.25} angle={0.5} penumbra={1} color="#ffffff" />
         
         <Float speed={0.9} rotationIntensity={0} floatIntensity={0.24}>
           <QuantumBrain />

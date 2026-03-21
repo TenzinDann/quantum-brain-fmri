@@ -110,7 +110,7 @@ const App: React.FC = () => {
         <HeroScene />
         
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 z-0 pointer-events-none bg-[radial-gradient(circle_at_center,rgba(232,234,255,0.8)_0%,rgba(232,234,255,0.4)_50%,rgba(232,234,255,0)_100%)]" />
+        <div className="absolute inset-0 z-0 pointer-events-none bg-[radial-gradient(circle_at_center,rgba(232,234,255,0.48)_0%,rgba(232,234,255,0.18)_50%,rgba(232,234,255,0)_100%)]" />
 
         <div className="relative z-10 container mx-auto px-6 text-center">
           <h1 className="font-serif text-5xl md:text-7xl lg:text-9xl font-medium leading-tight md:leading-[0.9] mb-8 text-stone-900 drop-shadow-sm">
