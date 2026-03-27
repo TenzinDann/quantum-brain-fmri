@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, RotateCcw, Activity, Cpu, BarChart2 } from 'lucide-react';
 
@@ -109,6 +109,10 @@ export const SurfaceCodeDiagram: React.FC = () => {
 // --- TRANSFORMER DECODER DIAGRAM ---
 export const TransformerDecoderDiagram: React.FC = () => {
   const [step, setStep] = useState(0);
+  const syndromePattern = useMemo(
+    () => Array.from({ length: 9 }, () => Math.random() > 0.7),
+    []
+  );
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -119,7 +123,7 @@ export const TransformerDecoderDiagram: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center p-8 bg-[#F5F4F0] rounded-xl border border-stone-200 my-8">
-      <h3 className="font-serif text-xl mb-4 text-stone-900">AlphaQubit Architecture</h3>
+      <h3 className="font-serif text-xl mb-4 text-stone-900">Voxelbit Architecture</h3>
       <p className="text-sm text-stone-600 mb-6 text-center max-w-md">
         The model processes syndrome history using a recurrent transformer, attending to spatial and temporal correlations.
       </p>
@@ -130,7 +134,9 @@ export const TransformerDecoderDiagram: React.FC = () => {
         <div className="flex flex-col items-center gap-2">
             <div className={`w-16 h-16 rounded-lg border-2 flex flex-col items-center justify-center transition-colors duration-500 ${step === 0 ? 'border-nobel-gold bg-nobel-gold/10' : 'border-stone-200 bg-stone-50'}`}>
                 <div className="grid grid-cols-3 gap-1">
-                    {[...Array(9)].map((_, i) => <div key={i} className={`w-2 h-2 rounded-full ${Math.random() > 0.7 ? 'bg-stone-800' : 'bg-stone-300'}`}></div>)}
+                    {syndromePattern.map((isActive, i) => (
+                      <div key={i} className={`w-2 h-2 rounded-full ${isActive ? 'bg-stone-800' : 'bg-stone-300'}`}></div>
+                    ))}
                 </div>
             </div>
             <span className="text-[10px] uppercase font-bold tracking-wider text-stone-500">Syndrome</span>
@@ -182,6 +188,7 @@ export const TransformerDecoderDiagram: React.FC = () => {
 // --- PERFORMANCE CHART ---
 export const PerformanceMetricDiagram: React.FC = () => {
     const [distance, setDistance] = useState<3 | 5 | 11>(5);
+    const distances: Array<3 | 5 | 11> = [3, 5, 11];
     
     // Values represent Logical Error Rate (approx %).
     // Lower is better.
@@ -209,13 +216,13 @@ export const PerformanceMetricDiagram: React.FC = () => {
             <div className="flex-1 min-w-[240px]">
                 <h3 className="font-serif text-xl mb-2 text-nobel-gold">Performance vs Standard</h3>
                 <p className="text-stone-400 text-sm mb-4 leading-relaxed">
-                    AlphaQubit consistently achieves lower logical error rates (LER) than the standard Minimum-Weight Perfect Matching (MWPM) decoder.
+                    Voxelbit consistently achieves lower logical error rates (LER) than the standard Minimum-Weight Perfect Matching (MWPM) decoder.
                 </p>
                 <div className="flex gap-2 mt-6">
-                    {[3, 5, 11].map((d) => (
+                    {distances.map((d) => (
                         <button 
                             key={d}
-                            onClick={() => setDistance(d as any)} 
+                            onClick={() => setDistance(d)} 
                             className={`px-3 py-1.5 rounded text-sm font-medium transition-all duration-200 border ${distance === d ? 'bg-nobel-gold text-stone-900 border-nobel-gold' : 'bg-transparent text-stone-400 border-stone-700 hover:border-stone-500 hover:text-stone-200'}`}
                         >
                             Distance {d}
@@ -251,7 +258,7 @@ export const PerformanceMetricDiagram: React.FC = () => {
                     <div className="h-6 flex items-center text-xs font-bold text-stone-500 uppercase tracking-wider">Standard</div>
                 </div>
 
-                {/* AlphaQubit Bar */}
+                {/* Voxelbit Bar */}
                 <div className="w-20 flex flex-col justify-end items-center h-full z-10">
                      <div className="flex-1 w-full flex items-end justify-center relative mb-3">
                         <div className="absolute -top-5 w-full text-center text-sm font-mono text-nobel-gold font-bold bg-stone-900/90 py-1 px-2 rounded backdrop-blur-sm border border-nobel-gold/30 shadow-sm">{formatValue(currentData.alpha)}</div>
@@ -265,7 +272,7 @@ export const PerformanceMetricDiagram: React.FC = () => {
                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent to-white/20"></div>
                         </motion.div>
                     </div>
-                     <div className="h-6 flex items-center text-xs font-bold text-nobel-gold uppercase tracking-wider">AlphaQubit</div>
+                     <div className="h-6 flex items-center text-xs font-bold text-nobel-gold uppercase tracking-wider">Voxelbit</div>
                 </div>
             </div>
         </div>

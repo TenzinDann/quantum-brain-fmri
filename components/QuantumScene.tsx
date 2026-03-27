@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 
-import React, { useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Float, MeshDistortMaterial, Sphere, Torus, Cylinder, Stars, Environment, Box } from '@react-three/drei';
 import * as THREE from 'three';
@@ -38,6 +38,7 @@ const QuantumParticle = ({ position, color, scale = 1 }: { position: [number, nu
 const QuantumBrain = () => {
   const groupRef = useRef<THREE.Group>(null);
   const pointsRef = useRef<THREE.Points>(null);
+  const visibilityBoost = 1.08;
   
   const particlesCount = 15000;
   const { positions, colors } = useMemo(() => {
@@ -59,18 +60,18 @@ const QuantumBrain = () => {
 
       // Cartoon-style brain silhouette:
       // rounder hemispheres + clear center fissure + compact cerebellum + slim brainstem.
-      if (region < 0.86) {
+      if (region < 0.88) {
         const side = Math.random() > 0.5 ? 1 : -1;
         const theta = Math.random() * Math.PI * 2;
         const phi = Math.acos(2 * Math.random() - 1);
-        const shell = 0.6 + Math.pow(Math.random(), 0.38) * 0.4;
+        const shell = 0.7 + Math.pow(Math.random(), 0.32) * 0.3;
 
-        // Rounder, friendlier volume proportions.
-        x = 1.38 * Math.sin(phi) * Math.cos(theta);
-        y = 1.12 * Math.cos(phi);
-        z = 1.36 * Math.sin(phi) * Math.sin(theta);
+        // Compact lobes closer to the reference video.
+        x = 1.18 * Math.sin(phi) * Math.cos(theta);
+        y = 0.98 * Math.cos(phi);
+        z = 1.16 * Math.sin(phi) * Math.sin(theta);
 
-        x = (Math.abs(x) + 0.1) * side;
+        x = (Math.abs(x) + 0.08) * side;
         x *= shell;
         y *= shell;
         z *= shell;
@@ -98,7 +99,7 @@ const QuantumBrain = () => {
         // Soften the fissure as we move backward, so the rear contour stays full.
         const backFissureFade = 1 - posteriorWeight * 0.65;
         const fissureStrength =
-          Math.exp(-Math.pow(Math.abs(x) - 0.12, 2) / 0.026) * 0.055 * backFissureFade;
+          Math.exp(-Math.pow(Math.abs(x) - 0.1, 2) / 0.018) * 0.08 * backFissureFade;
         x += side * fissureStrength;
 
         // Smoother folds than realistic model for a stylized/cartoon look.
@@ -112,16 +113,16 @@ const QuantumBrain = () => {
         x *= displacement;
         y *= displacement;
         z *= displacement;
-      } else if (region < 0.96) {
+      } else if (region < 0.98) {
         // Cerebellum.
         const side = Math.random() > 0.5 ? 1 : -1;
         const theta = Math.random() * Math.PI * 2;
         const phi = Math.acos(2 * Math.random() - 1);
-        const shell = 0.6 + Math.pow(Math.random(), 0.5) * 0.4;
+        const shell = 0.72 + Math.pow(Math.random(), 0.48) * 0.28;
 
-        x = (Math.abs(0.58 * Math.sin(phi) * Math.cos(theta)) + 0.1) * side * shell;
-        y = (-0.74 + 0.5 * Math.cos(phi)) * shell;
-        z = (-1.06 + 0.55 * Math.sin(phi) * Math.sin(theta)) * shell;
+        x = (Math.abs(0.5 * Math.sin(phi) * Math.cos(theta)) + 0.08) * side * shell;
+        y = (-0.62 + 0.38 * Math.cos(phi)) * shell;
+        z = (-0.78 + 0.4 * Math.sin(phi) * Math.sin(theta)) * shell;
 
         const folds = Math.sin((x * 8.3 + z * 8.1)) * Math.cos(y * 8.9);
         const displacement = 1 + folds * 0.032;
@@ -132,10 +133,10 @@ const QuantumBrain = () => {
         // Brainstem.
         const t = Math.random();
         const angle = Math.random() * Math.PI * 2;
-        const radius = (1 - t) * 0.11 + 0.045;
+        const radius = (1 - t) * 0.08 + 0.035;
         x = Math.cos(angle) * radius;
-        y = -1.02 - t * 0.86;
-        z = -0.72 + Math.sin(angle) * radius * 0.5;
+        y = -0.88 - t * 0.58;
+        z = -0.58 + Math.sin(angle) * radius * 0.45;
       }
 
       nextPositions[i * 3] = x;
@@ -148,38 +149,34 @@ const QuantumBrain = () => {
       maxY = Math.max(maxY, y);
       maxZ = Math.max(maxZ, z);
 
-      // Keep the original soft luminous palette, with slight regional distinction.
-      if (region >= 0.96) {
-        // Brainstem (cool white)
-        nextColors[i * 3] = 0.95;
-        nextColors[i * 3 + 1] = 0.97;
-        nextColors[i * 3 + 2] = 1.0;
-      } else if (region >= 0.86) {
-        // Cerebellum (warm tint)
-        nextColors[i * 3] = 1.0;
-        nextColors[i * 3 + 1] = 0.9;
-        nextColors[i * 3 + 2] = 0.84;
-      } else {
-        // Main cortex: pastel cartoon palette
-        const mix = Math.random();
-        if (mix > 0.75) {
-          nextColors[i * 3] = 1.0;   // pink
-          nextColors[i * 3 + 1] = 0.82;
-          nextColors[i * 3 + 2] = 0.91;
-        } else if (mix > 0.5) {
-          nextColors[i * 3] = 0.84;  // lilac
-          nextColors[i * 3 + 1] = 0.79;
-          nextColors[i * 3 + 2] = 1.0;
-        } else if (mix > 0.25) {
-          nextColors[i * 3] = 0.81;  // blue
-          nextColors[i * 3 + 1] = 0.89;
-          nextColors[i * 3 + 2] = 1.0;
-        } else {
-          nextColors[i * 3] = 1.0;   // peach highlight
-          nextColors[i * 3 + 1] = 0.88;
-          nextColors[i * 3 + 2] = 0.78;
-        }
-      }
+      // Video-like cyan -> violet -> warm top gradient.
+      const xNorm = Math.min(1, Math.max(0, (x + 1.45) / 2.9));
+      const yNorm = Math.min(1, Math.max(0, (y + 1.05) / 2.1));
+      const cyan: [number, number, number] = [0.57, 0.94, 0.98];
+      const violet: [number, number, number] = [0.53, 0.46, 0.97];
+      const warm: [number, number, number] = [0.97, 0.86, 0.78];
+
+      let r = cyan[0] + (violet[0] - cyan[0]) * xNorm;
+      let g = cyan[1] + (violet[1] - cyan[1]) * xNorm;
+      let b = cyan[2] + (violet[2] - cyan[2]) * xNorm;
+
+      const topWarm = Math.pow(yNorm, 1.25) * 0.34;
+      r = r + (warm[0] - r) * topWarm;
+      g = g + (warm[1] - g) * topWarm;
+      b = b + (warm[2] - b) * topWarm;
+
+      // Slight shading near lower-right to match the reference depth.
+      const lowerShade = Math.max(0, -y - 0.05) * 0.16 + Math.max(0, x) * 0.06;
+      const shadeFactor = Math.max(0.78, 1 - lowerShade);
+
+      nextColors[i * 3] = r * shadeFactor;
+      nextColors[i * 3 + 1] = g * shadeFactor;
+      nextColors[i * 3 + 2] = b * shadeFactor;
+
+      // Increase particle visibility without changing particle size/glow radius.
+      nextColors[i * 3] = Math.min(1, nextColors[i * 3] * visibilityBoost);
+      nextColors[i * 3 + 1] = Math.min(1, nextColors[i * 3 + 1] * visibilityBoost);
+      nextColors[i * 3 + 2] = Math.min(1, nextColors[i * 3 + 2] * visibilityBoost);
     }
 
     // Auto-center to keep model visually level and centered.
@@ -199,17 +196,18 @@ const QuantumBrain = () => {
   useFrame((state) => {
     if (groupRef.current) {
       const t = state.clock.getElapsedTime();
-      groupRef.current.rotation.y = t * 0.12;
-      groupRef.current.rotation.x = Math.sin(t * 0.18) * 0.04;
+      // Clockwise spin on the homepage hero scene.
+      groupRef.current.rotation.y = -t * 0.12;
+      groupRef.current.rotation.x = Math.sin(t * 0.12) * 0.03;
       groupRef.current.rotation.z = 0;
       groupRef.current.position.x = 0;
-      groupRef.current.position.y = Math.sin(t * 0.4) * 0.15;
+      groupRef.current.position.y = Math.sin(t * 0.28) * 0.05;
     }
     if (pointsRef.current) pointsRef.current.rotation.z = 0;
   });
 
   return (
-    <group ref={groupRef} scale={[1.12, 1.12, 1.12]}>
+    <group ref={groupRef} scale={[1.4, 1.4, 1.4]}>
       <points ref={pointsRef}>
         <bufferGeometry>
           <bufferAttribute
@@ -229,17 +227,14 @@ const QuantumBrain = () => {
           size={0.03}
           vertexColors
           transparent
-          opacity={0.98}
+          opacity={1}
+          toneMapped={false}
           sizeAttenuation
           depthWrite={false}
           blending={THREE.AdditiveBlending}
         />
       </points>
       
-      {/* Soft internal glow */}
-      <Sphere args={[1.02, 32, 32]}>
-        <meshBasicMaterial color="#f5e9ff" transparent opacity={0.22} />
-      </Sphere>
       <pointLight intensity={1.9} distance={4.5} color="#f6f0ff" />
     </group>
   );
@@ -275,32 +270,51 @@ const NeuralConnection = () => {
     }
   });
 
-  const geometry = new THREE.BufferGeometry().setFromPoints(points.current);
-  const material = new THREE.LineBasicMaterial({ color: "#ffffff", transparent: true, opacity: 0.1 });
+  const { line, geometry, material } = useMemo(() => {
+    const nextGeometry = new THREE.BufferGeometry().setFromPoints(points.current);
+    const nextMaterial = new THREE.LineBasicMaterial({ color: "#ffffff", transparent: true, opacity: 0.1 });
+    const nextLine = new THREE.Line(nextGeometry, nextMaterial);
+    return { line: nextLine, geometry: nextGeometry, material: nextMaterial };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      geometry.dispose();
+      material.dispose();
+    };
+  }, [geometry, material]);
 
   return (
-    <primitive ref={lineRef} object={new THREE.Line(geometry, material)} />
+    <primitive ref={lineRef} object={line} />
   );
 };
 
 export const HeroScene: React.FC = () => {
+  // Silver-gray hero backdrop tuned between the original light and dark looks.
+  const backgroundColor = '#E8EAFD';
+  const ambientIntensity = 0.98;
+  const keyLightIntensity = 2.75;
+  const fillLightIntensity = 2.25;
+  const rimLightIntensity = 1.9;
+  const spotIntensity = 1.1;
+
   return (
     <div className="absolute inset-0 z-0 opacity-100 pointer-events-none">
       <Canvas camera={{ position: [0, 0, 6], fov: 45 }}>
         {/* Background color matching the reference image's soft gradient base */}
-        <color attach="background" args={['#e8eaff']} />
+        <color attach="background" args={[backgroundColor]} />
         
         {/* Atmospheric lighting to match reference image's soft multi-directional glow */}
-        <ambientLight intensity={1.05} />
-        <pointLight position={[10, 10, 10]} intensity={3.1} color="#fff8f0" /> {/* Warm top-right */}
-        <pointLight position={[-10, -5, 5]} intensity={2.6} color="#e0e5ff" /> {/* Cool bottom-left */}
-        <pointLight position={[0, 5, -5]} intensity={2.1} color="#ffe0f0" /> {/* Soft pink back */}
-        <spotLight position={[0, 10, 0]} intensity={1.25} angle={0.5} penumbra={1} color="#ffffff" />
+        <ambientLight intensity={ambientIntensity} />
+        <pointLight position={[10, 10, 10]} intensity={keyLightIntensity} color="#f1f3ff" /> {/* Warm/cool key */}
+        <pointLight position={[-10, -5, 5]} intensity={fillLightIntensity} color="#c6cee7" /> {/* Fill */}
+        <pointLight position={[0, 5, -5]} intensity={rimLightIntensity} color="#eddff6" /> {/* Rim */}
+        <spotLight position={[0, 10, 0]} intensity={spotIntensity} angle={0.5} penumbra={1} color="#ffffff" />
         
-        <Float speed={0.9} rotationIntensity={0} floatIntensity={0.24}>
+        <Float speed={0.55} rotationIntensity={0} floatIntensity={0.06}>
           <QuantumBrain />
-          {/* Very subtle neural connections */}
-          {[...Array(12)].map((_, i) => (
+          {/* Keep only a few lines so the reference-style silhouette stays clean. */}
+          {[...Array(4)].map((_, i) => (
             <NeuralConnection key={i} />
           ))}
         </Float>

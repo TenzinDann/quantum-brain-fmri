@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 100px;
+}
+
+body {
+  background-color: #f9f8f4;
+  color: #1a1a1a;
+  font-family: "Inter", sans-serif;
+}
+
+@media print {
+  nav,
+  footer,
+  button {
+    display: none !important;
+  }
+}
