@@ -13,6 +13,13 @@ body {
   font-family: "Inter", sans-serif;
 }
 
+header p,
+main p {
+  text-align: justify;
+  text-justify: inter-word;
+  hyphens: auto;
+}
+
 @media print {
   nav,
   footer,

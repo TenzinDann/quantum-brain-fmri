@@ -388,7 +388,7 @@ const App: React.FC = () => {
               for Naturalistic fMRI
             </span>
           </h1>
-          <p className="max-w-2xl mx-auto text-lg md:text-xl text-stone-700 dark:text-stone-700 font-light leading-relaxed mb-12">
+          <p className="max-w-2xl mx-auto text-center text-lg md:text-xl text-stone-700 dark:text-stone-700 font-light leading-relaxed mb-12">
             A CNeuroMod analysis of Friends movie-watching responses that discovers stable latent brain components, then validates them through social-action coding and targeted food-dining evidence.
           </p>
 
