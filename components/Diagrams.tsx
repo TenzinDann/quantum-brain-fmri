@@ -1,280 +1,331 @@
-
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
-*/
+ */
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Play, RotateCcw, Activity, Cpu, BarChart2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { BarChart2, Brain, Database, Layers, Network, Search, Utensils } from 'lucide-react';
 
-// --- SURFACE CODE DIAGRAM ---
-export const SurfaceCodeDiagram: React.FC = () => {
-  // 3x3 grid of data qubits (9 total)
-  // Interspersed with 4 stabilizers (checkers)
-  const [errors, setErrors] = useState<number[]>([]);
-  
-  // Map data qubit indices (0-8) to affected stabilizers (0-3)
-  // Layout:
-  // D0  S0  D1
-  // S1  D4  S2
-  // D3  S3  D5
-  // (Simplified layout for viz)
-  
-  // Adjacency list: DataQubit Index -> Stabilizer Indices
-  const adjacency: Record<number, number[]> = {
-    0: [0, 1],
-    1: [0, 2],
-    2: [1, 3],
-    3: [2, 3],
-    4: [0, 1, 2, 3], // Center affects all in this simplified tightly packed model
+const evidenceSteps = [
+  {
+    label: 'CNeuroMod',
+    title: 'Friends fMRI',
+    detail: '4 subjects x 137k TRs x 1,000 parcels',
+    icon: Database,
+    color: '#4c7c96',
+  },
+  {
+    label: 'NMF',
+    title: '50-run consensus',
+    detail: 'k = 20 components per subject',
+    icon: Layers,
+    color: '#8d5a97',
+  },
+  {
+    label: 'Match',
+    title: 'Cross-subject ranks',
+    detail: '10 matched groups, 7 retained candidates',
+    icon: Network,
+    color: '#b88a44',
+  },
+  {
+    label: 'Validate',
+    title: 'Stimulus evidence',
+    detail: 'social coding, food frames, target zones',
+    icon: Search,
+    color: '#2f7f69',
+  },
+] as const;
+
+const componentProfiles = {
+  1: {
+    label: 'Rank 1',
+    network: 'Somatomotor',
+    theme: 'Dialogue / cognitive context',
+    stability: 'mean r = 0.654',
+    color: '#4c7c96',
+    values: [0.95, 0.88, 0.74, 0.31, 0.22, 0.58, 0.67, 0.42, 0.25, 0.78, 0.62, 0.36],
+  },
+  2: {
+    label: 'Rank 2',
+    network: 'DefaultMode',
+    theme: 'Observable action and dining context',
+    stability: 'mean r = 0.440',
+    color: '#b88a44',
+    values: [0.24, 0.32, 0.55, 0.76, 0.83, 0.91, 0.44, 0.57, 0.63, 0.35, 0.71, 0.69],
+  },
+  4: {
+    label: 'Rank 4',
+    network: 'Visual',
+    theme: 'Visual food-related candidate',
+    stability: 'lower-confidence shared',
+    color: '#8d5a97',
+    values: [0.82, 0.91, 0.97, 0.73, 0.52, 0.37, 0.84, 0.89, 0.66, 0.41, 0.58, 0.76],
+  },
+  6: {
+    label: 'Rank 6',
+    network: 'DefaultMode',
+    theme: 'Face / expression content',
+    stability: 'secondary evidence',
+    color: '#2f7f69',
+    values: [0.38, 0.51, 0.73, 0.57, 0.44, 0.69, 0.81, 0.61, 0.33, 0.29, 0.47, 0.66],
+  },
+} as const;
+
+const socialBars = [
+  { rank: 'Rank 1', label: 'Dialogue / context', top: 47.0, matched: 29.0, q: '0.00485', color: '#4c7c96' },
+  { rank: 'Rank 2', label: 'Observable action', top: 39.0, matched: 18.0, q: '0.000150', color: '#b88a44' },
+  { rank: 'Rank 4', label: 'Observable action', top: 46.0, matched: 17.0, q: '3.27e-8', color: '#8d5a97' },
+  { rank: 'Rank 6', label: 'Face / expression', top: 40.5, matched: 25.5, q: '0.0204', color: '#2f7f69' },
+] as const;
+
+const foodBars = [
+  { label: 'Visible food', rank: 'Rank 4', value: 2637, max: 3660, detail: 'Visual-dominant candidate', color: '#8d5a97' },
+  { label: 'Cup-only context', rank: 'Rank 2', value: 1023, max: 3660, detail: 'Dining / narrative context', color: '#b88a44' },
+  { label: 'Target hits', rank: 'Rank 4', value: 5, max: 50, detail: '5 of top 50 parcels', color: '#4c7c96' },
+] as const;
+
+export const EvidenceChainDiagram: React.FC = () => {
+  const [activeStep, setActiveStep] = useState(0);
+  const [playbackReset, setPlaybackReset] = useState(0);
+
+  const selectStep = (index: number) => {
+    setActiveStep(index);
+    setPlaybackReset((reset) => reset + 1);
   };
-
-  const toggleError = (id: number) => {
-    setErrors(prev => prev.includes(id) ? prev.filter(e => e !== id) : [...prev, id]);
-  };
-
-  // Calculate active stabilizers based on parity (even errors = off, odd errors = on)
-  const activeStabilizers = [0, 1, 2, 3].filter(stabId => {
-    let errorCount = 0;
-    Object.entries(adjacency).forEach(([dataId, stabs]) => {
-        if (errors.includes(parseInt(dataId)) && stabs.includes(stabId)) {
-            errorCount++;
-        }
-    });
-    return errorCount % 2 !== 0;
-  });
-
-  return (
-    <div className="flex flex-col items-center p-8 bg-white rounded-xl shadow-sm border border-stone-200 my-8">
-      <h3 className="font-serif text-xl mb-4 text-stone-800">Interactive: Surface Code Detection</h3>
-      <p className="text-sm text-stone-500 mb-6 text-center max-w-md">
-        Click the grey <strong>Data Qubits</strong> to inject errors. Watch the colored <strong>Stabilizers</strong> light up when they detect an odd number of errors.
-      </p>
-      
-      <div className="relative w-64 h-64 bg-[#F5F4F0] rounded-lg border border-stone-200 p-4 flex flex-wrap justify-between content-between relative">
-         {/* Grid Lines */}
-         <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-20">
-            <div className="w-2/3 h-2/3 border border-stone-400"></div>
-            <div className="absolute w-full h-[1px] bg-stone-400"></div>
-            <div className="absolute h-full w-[1px] bg-stone-400"></div>
-         </div>
-
-         {/* Stabilizers (Z=Blue, X=Red) - positioned absolutely for control */}
-         {[
-             {id: 0, x: '50%', y: '20%', type: 'Z', color: 'bg-blue-500'},
-             {id: 1, x: '20%', y: '50%', type: 'X', color: 'bg-red-500'},
-             {id: 2, x: '80%', y: '50%', type: 'X', color: 'bg-red-500'},
-             {id: 3, x: '50%', y: '80%', type: 'Z', color: 'bg-blue-500'},
-         ].map(stab => (
-             <motion.div
-                key={`stab-${stab.id}`}
-                className={`absolute w-10 h-10 -ml-5 -mt-5 flex items-center justify-center text-white text-xs font-bold rounded-sm shadow-sm transition-all duration-300 ${activeStabilizers.includes(stab.id) ? stab.color + ' opacity-100 scale-110 ring-4 ring-offset-2 ring-stone-200' : 'bg-stone-300 opacity-40'}`}
-                style={{ left: stab.x, top: stab.y }}
-             >
-                 {stab.type}
-             </motion.div>
-         ))}
-
-         {/* Data Qubits */}
-         {[
-             {id: 0, x: '20%', y: '20%'}, {id: 1, x: '80%', y: '20%'},
-             {id: 4, x: '50%', y: '50%'}, // Center
-             {id: 2, x: '20%', y: '80%'}, {id: 3, x: '80%', y: '80%'},
-         ].map(q => (
-             <button
-                key={`data-${q.id}`}
-                onClick={() => toggleError(q.id)}
-                className={`absolute w-8 h-8 -ml-4 -mt-4 rounded-full border-2 flex items-center justify-center transition-all duration-200 z-10 ${errors.includes(q.id) ? 'bg-stone-800 border-stone-900 text-nobel-gold' : 'bg-white border-stone-300 hover:border-stone-500'}`}
-                style={{ left: q.x, top: q.y }}
-             >
-                {errors.includes(q.id) && <Activity size={14} />}
-             </button>
-         ))}
-      </div>
-
-      <div className="mt-6 flex items-center gap-4 text-xs font-mono text-stone-500">
-          <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-full bg-stone-800"></div> Error</div>
-          <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-sm bg-blue-500"></div> Z-Check</div>
-          <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-sm bg-red-500"></div> X-Check</div>
-      </div>
-      
-      <div className="mt-4 h-6 text-sm font-serif italic text-stone-600">
-        {errors.length === 0 ? "System is stable." : `Detected ${activeStabilizers.length} parity violations.`}
-      </div>
-    </div>
-  );
-};
-
-// --- TRANSFORMER DECODER DIAGRAM ---
-export const TransformerDecoderDiagram: React.FC = () => {
-  const [step, setStep] = useState(0);
-  const syndromePattern = useMemo(
-    () => Array.from({ length: 9 }, () => Math.random() > 0.7),
-    []
-  );
 
   useEffect(() => {
     const interval = setInterval(() => {
-        setStep(s => (s + 1) % 4);
-    }, 2000);
+      setActiveStep((step) => (step + 1) % evidenceSteps.length);
+    }, 1700);
     return () => clearInterval(interval);
-  }, []);
+  }, [playbackReset]);
 
   return (
-    <div className="flex flex-col items-center p-8 bg-[#F5F4F0] rounded-xl border border-stone-200 my-8">
-      <h3 className="font-serif text-xl mb-4 text-stone-900">Voxelbit Architecture</h3>
-      <p className="text-sm text-stone-600 mb-6 text-center max-w-md">
-        The model processes syndrome history using a recurrent transformer, attending to spatial and temporal correlations.
-      </p>
-
-      <div className="relative w-full max-w-lg h-56 bg-white rounded-lg shadow-inner overflow-hidden mb-6 border border-stone-200 flex items-center justify-center gap-8 p-4">
-        
-        {/* Input Stage */}
-        <div className="flex flex-col items-center gap-2">
-            <div className={`w-16 h-16 rounded-lg border-2 flex flex-col items-center justify-center transition-colors duration-500 ${step === 0 ? 'border-nobel-gold bg-nobel-gold/10' : 'border-stone-200 bg-stone-50'}`}>
-                <div className="grid grid-cols-3 gap-1">
-                    {syndromePattern.map((isActive, i) => (
-                      <div key={i} className={`w-2 h-2 rounded-full ${isActive ? 'bg-stone-800' : 'bg-stone-300'}`}></div>
-                    ))}
-                </div>
-            </div>
-            <span className="text-[10px] uppercase font-bold tracking-wider text-stone-500">Syndrome</span>
+    <div className="bg-white border border-[#ded7c7] rounded-lg p-6 shadow-sm">
+      <div className="flex items-center justify-between gap-3 mb-6">
+        <div>
+          <h3 className="font-serif text-2xl text-slate-950">Capstone Evidence Chain</h3>
+          <p className="text-sm text-slate-600">How the project moves from raw fMRI to validated interpretation.</p>
         </div>
-
-        {/* Arrows */}
-        <motion.div animate={{ opacity: step >= 1 ? 1 : 0.3, x: step >= 1 ? 0 : -5 }}>→</motion.div>
-
-        {/* Transformer Stage */}
-        <div className="flex flex-col items-center gap-2">
-             <div className={`w-24 h-24 rounded-xl border-2 flex flex-col items-center justify-center gap-2 transition-colors duration-500 relative overflow-hidden ${step === 1 || step === 2 ? 'border-stone-800 bg-stone-900 text-white' : 'border-stone-200 bg-stone-50'}`}>
-                <Cpu size={24} className={step === 1 || step === 2 ? 'text-nobel-gold animate-pulse' : 'text-stone-300'} />
-                {step === 1 && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-full h-[1px] bg-nobel-gold absolute top-1/3 animate-ping"></div>
-                        <div className="w-full h-[1px] bg-nobel-gold absolute top-2/3 animate-ping delay-75"></div>
-                    </div>
-                )}
-             </div>
-             <span className="text-[10px] uppercase font-bold tracking-wider text-stone-500">Transformer</span>
-        </div>
-
-        {/* Arrows */}
-        <motion.div animate={{ opacity: step >= 3 ? 1 : 0.3, x: step >= 3 ? 0 : -5 }}>→</motion.div>
-
-        {/* Output Stage */}
-        <div className="flex flex-col items-center gap-2">
-            <div className={`w-16 h-16 rounded-lg border-2 flex flex-col items-center justify-center transition-colors duration-500 ${step === 3 ? 'border-green-500 bg-green-50' : 'border-stone-200 bg-stone-50'}`}>
-                {step === 3 ? (
-                    <span className="text-2xl font-serif text-green-600">X</span>
-                ) : (
-                    <span className="text-2xl font-serif text-stone-300">?</span>
-                )}
-            </div>
-            <span className="text-[10px] uppercase font-bold tracking-wider text-stone-500">Correction</span>
-        </div>
-
+        <Brain className="text-[#4c7c96] shrink-0" size={28} />
       </div>
 
-      <div className="flex gap-2">
-          {[0, 1, 2, 3].map(s => (
-              <div key={s} className={`h-1 rounded-full transition-all duration-300 ${step === s ? 'w-8 bg-nobel-gold' : 'w-2 bg-stone-300'}`}></div>
-          ))}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+        {evidenceSteps.map((step, index) => {
+          const Icon = step.icon;
+          const isActive = index === activeStep;
+          return (
+            <div key={step.label} className="relative">
+              <motion.div
+                role="button"
+                tabIndex={0}
+                aria-pressed={isActive}
+                aria-label={`Show ${step.title} evidence step`}
+                onClick={() => selectStep(index)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    selectStep(index);
+                  }
+                }}
+                animate={{
+                  y: isActive ? -4 : 0,
+                  borderColor: isActive ? step.color : '#e2e8f0',
+                }}
+                className="h-full rounded-lg border bg-[#f7f9fa] p-4 cursor-pointer outline-none transition-colors hover:bg-white focus-visible:ring-2 focus-visible:ring-[#4c7c96] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{step.label}</div>
+                  <div className="h-9 w-9 rounded-full flex items-center justify-center" style={{ backgroundColor: `${step.color}1f`, color: step.color }}>
+                    <Icon size={18} />
+                  </div>
+                </div>
+                <h4 className="font-serif text-lg text-slate-950 mb-2">{step.title}</h4>
+                <p className="text-xs text-slate-600 leading-relaxed">{step.detail}</p>
+              </motion.div>
+              {index < evidenceSteps.length - 1 && (
+                <div className="hidden md:block absolute top-1/2 -right-3 w-3 h-[1px] bg-slate-300" />
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="mt-6 h-2 rounded-full bg-slate-100 overflow-hidden">
+        <motion.div
+          className="h-full bg-[#4c7c96]"
+          animate={{ width: `${((activeStep + 1) / evidenceSteps.length) * 100}%` }}
+          transition={{ type: 'spring', stiffness: 90, damping: 18 }}
+        />
       </div>
     </div>
   );
 };
 
-// --- PERFORMANCE CHART ---
-export const PerformanceMetricDiagram: React.FC = () => {
-    const [distance, setDistance] = useState<3 | 5 | 11>(5);
-    const distances: Array<3 | 5 | 11> = [3, 5, 11];
-    
-    // Values represent Logical Error Rate (approx %).
-    // Lower is better.
-    // Updated with correct Paper values:
-    // Dist 3: MWPM 3.5%, Alpha 2.9%
-    // Dist 5: MWPM 3.6%, Alpha 2.75%
-    // Dist 11: MWPM ~0.0041%, Alpha ~0.0009% (Based on paper's hard input simulation data)
-    const data = {
-        3: { mwpm: 3.5, alpha: 2.9 },
-        5: { mwpm: 3.6, alpha: 2.75 },
-        11: { mwpm: 0.0041, alpha: 0.0009 } 
-    };
+export const ComponentMatrixDiagram: React.FC = () => {
+  const ranks = [1, 2, 4, 6] as const;
+  const [selectedRank, setSelectedRank] = useState<(typeof ranks)[number]>(1);
+  const profile = componentProfiles[selectedRank];
 
-    const currentData = data[distance];
-    // Normalize to max value of current set to visually fill the chart, with some headroom
-    const maxVal = Math.max(currentData.mwpm, currentData.alpha) * 1.25;
-    
-    const formatValue = (val: number) => {
-        if (val < 0.01) return val.toFixed(4) + '%';
-        return val.toFixed(2) + '%';
-    }
+  const cells = useMemo(() => {
+    return Array.from({ length: 72 }, (_, index) => {
+      const base = profile.values[index % profile.values.length];
+      const wave = 0.16 * Math.sin(index * 1.7 + selectedRank);
+      return Math.max(0.08, Math.min(1, base + wave));
+    });
+  }, [profile.values, selectedRank]);
 
-    return (
-        <div className="flex flex-col md:flex-row gap-8 items-center p-8 bg-stone-900 text-stone-100 rounded-xl my-8 border border-stone-800 shadow-lg">
-            <div className="flex-1 min-w-[240px]">
-                <h3 className="font-serif text-xl mb-2 text-nobel-gold">Performance vs Standard</h3>
-                <p className="text-stone-400 text-sm mb-4 leading-relaxed">
-                    Voxelbit consistently achieves lower logical error rates (LER) than the standard Minimum-Weight Perfect Matching (MWPM) decoder.
-                </p>
-                <div className="flex gap-2 mt-6">
-                    {distances.map((d) => (
-                        <button 
-                            key={d}
-                            onClick={() => setDistance(d)} 
-                            className={`px-3 py-1.5 rounded text-sm font-medium transition-all duration-200 border ${distance === d ? 'bg-nobel-gold text-stone-900 border-nobel-gold' : 'bg-transparent text-stone-400 border-stone-700 hover:border-stone-500 hover:text-stone-200'}`}
-                        >
-                            Distance {d}
-                        </button>
-                    ))}
-                </div>
-                <div className="mt-6 font-mono text-xs text-stone-500 flex items-center gap-2">
-                    <BarChart2 size={14} className="text-nobel-gold" /> 
-                    <span>LOGICAL ERROR RATE (LOWER IS BETTER)</span>
-                </div>
-            </div>
-            
-            <div className="relative w-64 h-72 bg-stone-800/50 rounded-xl border border-stone-700/50 p-6 flex justify-around items-end">
-                {/* Background Grid Lines */}
-                <div className="absolute inset-0 p-6 flex flex-col justify-between pointer-events-none opacity-10">
-                   <div className="w-full h-[1px] bg-stone-400"></div>
-                   <div className="w-full h-[1px] bg-stone-400"></div>
-                   <div className="w-full h-[1px] bg-stone-400"></div>
-                   <div className="w-full h-[1px] bg-stone-400"></div>
-                </div>
-
-                {/* MWPM Bar */}
-                <div className="w-20 flex flex-col justify-end items-center h-full z-10">
-                    <div className="flex-1 w-full flex items-end justify-center relative mb-3">
-                        <div className="absolute -top-5 w-full text-center text-sm font-mono text-stone-400 font-bold bg-stone-900/90 py-1 px-2 rounded backdrop-blur-sm border border-stone-700/50 shadow-sm">{formatValue(currentData.mwpm)}</div>
-                        <motion.div 
-                            className="w-full bg-stone-600 rounded-t-md border-t border-x border-stone-500/30"
-                            initial={{ height: 0 }}
-                            animate={{ height: `${(currentData.mwpm / maxVal) * 100}%` }}
-                            transition={{ type: "spring", stiffness: 80, damping: 15 }}
-                        />
-                    </div>
-                    <div className="h-6 flex items-center text-xs font-bold text-stone-500 uppercase tracking-wider">Standard</div>
-                </div>
-
-                {/* Voxelbit Bar */}
-                <div className="w-20 flex flex-col justify-end items-center h-full z-10">
-                     <div className="flex-1 w-full flex items-end justify-center relative mb-3">
-                        <div className="absolute -top-5 w-full text-center text-sm font-mono text-nobel-gold font-bold bg-stone-900/90 py-1 px-2 rounded backdrop-blur-sm border border-nobel-gold/30 shadow-sm">{formatValue(currentData.alpha)}</div>
-                        <motion.div 
-                            className="w-full bg-nobel-gold rounded-t-md shadow-[0_0_20px_rgba(197,160,89,0.25)] relative overflow-hidden"
-                            initial={{ height: 0 }}
-                            animate={{ height: Math.max(1, (currentData.alpha / maxVal) * 100) + '%' }}
-                            transition={{ type: "spring", stiffness: 80, damping: 15, delay: 0.1 }}
-                        >
-                           {/* Shine effect */}
-                           <div className="absolute inset-0 bg-gradient-to-tr from-transparent to-white/20"></div>
-                        </motion.div>
-                    </div>
-                     <div className="h-6 flex items-center text-xs font-bold text-nobel-gold uppercase tracking-wider">Voxelbit</div>
-                </div>
-            </div>
+  return (
+    <div className="bg-white/8 border border-white/10 rounded-lg p-6 shadow-xl backdrop-blur-sm">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+        <div>
+          <div className="text-xs font-bold uppercase tracking-widest text-[#d8b46d] mb-2">Interactive Component View</div>
+          <h3 className="font-serif text-2xl text-white">Temporal rank and spatial footprint</h3>
         </div>
-    )
-}
+        <div className="flex gap-2">
+          {ranks.map((rank) => (
+            <button
+              key={rank}
+              type="button"
+              onClick={() => setSelectedRank(rank)}
+              className={`px-3 py-2 rounded-md text-sm font-semibold transition-colors border ${
+                selectedRank === rank
+                  ? 'bg-[#d8b46d] text-slate-950 border-[#d8b46d]'
+                  : 'bg-transparent text-slate-300 border-white/15 hover:border-white/35'
+              }`}
+            >
+              R{rank}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-12 gap-1 mb-6">
+        {cells.map((value, index) => (
+          <motion.div
+            key={`${selectedRank}-${index}`}
+            className="aspect-square rounded-[3px]"
+            initial={{ opacity: 0.25, scale: 0.92 }}
+            animate={{ opacity: 0.38 + value * 0.62, scale: 1 }}
+            transition={{ delay: (index % 12) * 0.01 }}
+            style={{ backgroundColor: profile.color }}
+          />
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="rounded-lg bg-white/8 border border-white/10 p-4">
+          <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Selected</div>
+          <div className="font-serif text-xl text-white">{profile.label}</div>
+        </div>
+        <div className="rounded-lg bg-white/8 border border-white/10 p-4">
+          <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Network</div>
+          <div className="font-serif text-xl text-white">{profile.network}</div>
+        </div>
+        <div className="rounded-lg bg-white/8 border border-white/10 p-4">
+          <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Evidence</div>
+          <div className="font-serif text-xl text-white">{profile.stability}</div>
+        </div>
+      </div>
+
+      <p className="mt-5 text-sm text-slate-300 leading-relaxed">
+        {profile.theme}
+      </p>
+    </div>
+  );
+};
+
+export const FindingsMetricDiagram: React.FC = () => {
+  const [view, setView] = useState<'social' | 'food'>('social');
+
+  return (
+    <div className="bg-slate-950 text-slate-100 rounded-lg border border-slate-800 shadow-xl p-6 md:p-8">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+        <div>
+          <div className="text-xs font-bold uppercase tracking-widest text-[#d8b46d] mb-2">Evidence Summary</div>
+          <h3 className="font-serif text-3xl text-white">Component validation metrics</h3>
+        </div>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setView('social')}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-semibold border transition-colors ${
+              view === 'social' ? 'bg-[#d8b46d] text-slate-950 border-[#d8b46d]' : 'border-slate-700 text-slate-300 hover:border-slate-500'
+            }`}
+          >
+            <BarChart2 size={16} />
+            Social
+          </button>
+          <button
+            type="button"
+            onClick={() => setView('food')}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-semibold border transition-colors ${
+              view === 'food' ? 'bg-[#d8b46d] text-slate-950 border-[#d8b46d]' : 'border-slate-700 text-slate-300 hover:border-slate-500'
+            }`}
+          >
+            <Utensils size={16} />
+            Food
+          </button>
+        </div>
+      </div>
+
+      {view === 'social' ? (
+        <div className="space-y-5">
+          {socialBars.map((item) => (
+            <div key={`${item.rank}-${item.label}`} className="grid grid-cols-1 md:grid-cols-[190px_1fr_92px] gap-4 md:items-center">
+              <div>
+                <div className="text-xs font-bold uppercase tracking-widest text-slate-500">{item.rank}</div>
+                <div className="font-serif text-xl text-white">{item.label}</div>
+              </div>
+              <div className="space-y-2">
+                <MetricBar label="High response" value={item.top} max={55} color={item.color} />
+                <MetricBar label="Matched random" value={item.matched} max={55} color="#64748b" />
+              </div>
+              <div className="font-mono text-sm text-[#d8b46d] md:text-right">q = {item.q}</div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {foodBars.map((item) => (
+            <div key={item.label} className="rounded-lg bg-white/8 border border-white/10 p-5">
+              <div className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-3">{item.label}</div>
+              <div className="font-serif text-3xl text-white mb-2">{item.value.toLocaleString()}</div>
+              <div className="text-sm text-slate-400 mb-5">{item.rank} - {item.detail}</div>
+              <div className="h-3 rounded-full bg-slate-800 overflow-hidden">
+                <motion.div
+                  className="h-full rounded-full"
+                  style={{ backgroundColor: item.color }}
+                  animate={{ width: `${(item.value / item.max) * 100}%` }}
+                  transition={{ type: 'spring', stiffness: 80, damping: 16 }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const MetricBar = ({ label, value, max, color }: { label: string; value: number; max: number; color: string }) => {
+  return (
+    <div>
+      <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+        <span>{label}</span>
+        <span>{value.toFixed(1)}%</span>
+      </div>
+      <div className="h-3 rounded-full bg-slate-800 overflow-hidden">
+        <motion.div
+          className="h-full rounded-full"
+          style={{ backgroundColor: color }}
+          initial={{ width: 0 }}
+          animate={{ width: `${(value / max) * 100}%` }}
+          transition={{ type: 'spring', stiffness: 85, damping: 18 }}
+        />
+      </div>
+    </div>
+  );
+};

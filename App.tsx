@@ -1,37 +1,136 @@
-﻿
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
-*/
+ */
 
 import React, { useEffect, useState } from 'react';
-import { HeroScene, QuantumComputerScene } from './components/QuantumScene';
-import { SurfaceCodeDiagram, TransformerDecoderDiagram, PerformanceMetricDiagram } from './components/Diagrams';
-import { ArrowDown, Menu, X, BookOpen } from 'lucide-react';
+import { HeroScene, BrainNetworkScene } from './components/QuantumScene';
+import { ComponentMatrixDiagram, EvidenceChainDiagram, FindingsMetricDiagram } from './components/Diagrams';
+import {
+  ArrowDown,
+  BookOpen,
+  Database,
+  Layers,
+  Menu,
+  Network,
+  Utensils,
+  UserRound,
+  X,
+} from 'lucide-react';
 
 const NAV_ITEMS = [
-  { id: 'introduction', label: 'Introduction' },
-  { id: 'science', label: 'The Surface Code' },
-  { id: 'impact', label: 'Impact' },
-  { id: 'authors', label: 'Authors' },
+  { id: 'overview', label: 'Overview' },
+  { id: 'method', label: 'Method' },
+  { id: 'findings', label: 'Findings' },
+  { id: 'food', label: 'Food Validation' },
+] as const;
+
+const PROJECT_STATS = [
+  { value: '4', label: 'Subjects', detail: 'CNeuroMod Friends participants' },
+  { value: '137k', label: 'TRs / subject', detail: 'Full-resolution BOLD samples' },
+  { value: '1,000', label: 'Parcels', detail: 'Schaefer cortical atlas' },
+  { value: '50', label: 'NMF runs', detail: 'Consensus per subject' },
+] as const;
+
+const METHOD_STEPS = [
+  {
+    icon: Database,
+    title: 'Naturalistic fMRI',
+    body: 'Four CNeuroMod subjects watched six seasons of Friends, producing long-form BOLD time series across 1,000 cortical parcels.',
+  },
+  {
+    icon: Layers,
+    title: 'Parcelbit component model',
+    body: 'Each subject was decomposed into k = 20 non-negative components across 50 independent runs, then summarized into consensus components.',
+  },
+  {
+    icon: Network,
+    title: 'Cross-subject matching',
+    body: 'Component time courses were aligned on shared stimulus runs and matched across subjects by temporal similarity.',
+  },
+  {
+    icon: BookOpen,
+    title: 'Stimulus validation',
+    body: 'High-response moments were mapped back to frames, transcripts, social labels, and targeted food-dining annotations.',
+  },
+] as const;
+
+const FINDING_CARDS = [
+  {
+    rank: 'Rank 1',
+    title: 'Dialogue / cognitive context',
+    metric: '47.0% vs 29.0%',
+    detail: 'FDR q = 0.00485; strongest temporal stability with mean pairwise r = 0.654.',
+  },
+  {
+    rank: 'Rank 2',
+    title: 'Observable human action',
+    metric: '39.0% vs 18.0%',
+    detail: 'FDR q = 0.000150; DefaultMode-dominant component linked to social and dining context.',
+  },
+  {
+    rank: 'Rank 4',
+    title: 'Visual action and food candidate',
+    metric: '46.0% vs 17.0%',
+    detail: 'FDR q = 3.27e-8; Visual-dominant component with visible-food and target-zone support.',
+  },
+  {
+    rank: 'Rank 6',
+    title: 'Face / expression content',
+    metric: '40.5% vs 25.5%',
+    detail: 'FDR q = 0.0204; secondary social-representation evidence.',
+  },
 ] as const;
 
 const AUTHOR_CARDS = [
-  { name: 'Johannes Bausch', role: 'Google DeepMind', delay: '0s' },
-  { name: 'Andrew W. Senior', role: 'Google DeepMind', delay: '0.1s' },
-  { name: 'Francisco J. H. Heras', role: 'Google DeepMind', delay: '0.2s' },
-  { name: 'Thomas Edlich', role: 'Google DeepMind', delay: '0.3s' },
-  { name: 'Alex Davies', role: 'Google DeepMind', delay: '0.4s' },
-  { name: 'Michael Newman', role: 'Google Quantum AI', delay: '0.5s' },
+  {
+    name: 'Cairang Danzeng',
+    role: '',
+    website: 'https://tenzindann.github.io/',
+    avatar: `${import.meta.env.BASE_URL}cairang-danzeng-avatar.gif`,
+    delay: '0s',
+  },
+  { name: 'Ruicheng Yang', role: '', website: 'https://richardyang8.github.io/', delay: '0.1s' },
 ] as const;
 
-const AuthorCard = ({ name, role, delay }: { name: string, role: string, delay: string }) => {
+const AuthorCard = ({
+  name,
+  role,
+  website,
+  avatar,
+  delay,
+}: {
+  name: string;
+  role: string;
+  website: string;
+  avatar?: string;
+  delay: string;
+}) => {
   return (
-    <div className="flex flex-col group animate-fade-in-up items-center p-8 bg-white dark:bg-[#e3e6ef] rounded-xl border border-stone-200 dark:border-[#aeb4c6] shadow-sm hover:shadow-md transition-all duration-300 w-full max-w-xs hover:border-nobel-gold/50" style={{ animationDelay: delay }}>
-      <h3 className="font-serif text-2xl text-stone-900 dark:text-stone-900 text-center mb-3">{name}</h3>
-      <div className="w-12 h-0.5 bg-nobel-gold mb-4 opacity-60"></div>
-      <p className="text-xs text-stone-500 dark:text-stone-700 font-bold uppercase tracking-widest text-center leading-relaxed">{role}</p>
-    </div>
+    <a
+      href={website}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex flex-col group animate-fade-in-up items-center p-8 bg-[#020617] rounded-lg border border-[#020617] shadow-sm hover:shadow-md transition-all duration-300 w-full max-w-[18rem] hover:border-nobel-gold/50 cursor-pointer"
+      style={{ animationDelay: delay }}
+    >
+      {avatar ? (
+        <img
+          src={avatar}
+          alt={`${name} avatar`}
+          className="mb-7 h-56 w-56 rounded-md object-cover ring-2 ring-white/20"
+        />
+      ) : (
+        <div className="mb-7 flex h-56 w-56 items-center justify-center rounded-md bg-[#111827] ring-2 ring-white/20">
+          <UserRound className="h-40 w-40 fill-[#020617] text-[#020617]" strokeWidth={1.8} />
+        </div>
+      )}
+      <h3 className="font-serif text-2xl text-white text-center mb-3">{name}</h3>
+      <div className="w-12 h-0.5 bg-nobel-gold mb-4 opacity-60" />
+      {role ? (
+        <p className="text-xs text-white/80 font-bold uppercase tracking-widest text-center leading-relaxed">{role}</p>
+      ) : null}
+    </a>
   );
 };
 
@@ -62,65 +161,69 @@ const App: React.FC = () => {
     return () => window.removeEventListener('keydown', handleEscape);
   }, [menuOpen]);
 
-  const scrollToSection = (id: string) => (e: React.MouseEvent) => {
-    e.preventDefault();
+  const scrollToSection = (id: string) => (event: React.MouseEvent) => {
+    event.preventDefault();
     setMenuOpen(false);
     const element = document.getElementById(id);
-    if (element) {
-      // Account for fixed header offset
-      const headerOffset = 100;
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+    if (!element) return;
 
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: "smooth"
-      });
-    }
+    const headerOffset = 0;
+    const elementPosition = element.getBoundingClientRect().top;
+    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+    window.scrollTo({
+      top: offsetPosition,
+      behavior: 'smooth',
+    });
   };
 
   return (
-    <div className="min-h-screen bg-[#e8eaff] text-stone-800 selection:bg-nobel-gold selection:text-white">
-      
-      {/* Navigation */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-[#e8eaff]/90 backdrop-blur-md shadow-sm py-4' : 'bg-transparent py-6'}`}>
+    <div className="min-h-screen bg-[#e8eaff] text-slate-800 selection:bg-[#4c7c96] selection:text-white">
+      <nav
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          scrolled ? 'bg-[#e8eaff]/90 backdrop-blur-md shadow-sm py-4' : 'bg-transparent py-6'
+        }`}
+      >
         <div className="w-full px-4 md:px-6 flex justify-between items-center">
           <button
             type="button"
             aria-label="Back to top"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="inline-flex items-center gap-2 text-stone-900 text-lg cursor-pointer -ml-1 md:-ml-2 leading-none"
+            className="inline-flex items-center gap-3 text-slate-950 text-lg cursor-pointer -ml-1 md:-ml-2 leading-none"
           >
             <img
               src={logoSrc}
-              alt="Site logo"
-              className="block h-[1.7em] w-auto object-contain shrink-0"
-              style={{ filter: 'brightness(0)' }}
+              alt="PARCELBIT logo"
+              className="block h-[1.9em] w-auto object-contain shrink-0"
             />
             <span className={`font-serif font-bold tracking-wide transition-opacity leading-none ${scrolled ? 'opacity-100' : 'opacity-0 md:opacity-100'}`}>
-              VOXELBIT
+              PARCELBIT
             </span>
           </button>
-          
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium tracking-wide text-stone-600">
+
+          <div className="hidden md:flex items-center gap-7 text-sm font-medium tracking-wide text-slate-600">
             {NAV_ITEMS.map((item) => (
-              <a key={item.id} href={`#${item.id}`} onClick={scrollToSection(item.id)} className="hover:text-nobel-gold transition-colors cursor-pointer uppercase">
+              <a
+                key={item.id}
+                href={`#${item.id}`}
+                onClick={scrollToSection(item.id)}
+                className="hover:text-[#4c7c96] transition-colors cursor-pointer uppercase"
+              >
                 {item.label}
               </a>
             ))}
-            <a 
-              href="https://doi.org/10.1038/s41586-024-08148-8" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="px-5 py-2 bg-stone-900 text-white rounded-full hover:bg-stone-800 transition-colors shadow-sm cursor-pointer"
+            <a
+              href="#authors"
+              onClick={scrollToSection('authors')}
+              className="px-5 py-2 bg-slate-950 text-white rounded-full hover:bg-slate-800 transition-colors shadow-sm cursor-pointer"
             >
-              View Paper
+              AUTHORS
             </a>
           </div>
 
           <button
             type="button"
-            className="md:hidden text-stone-900 p-2"
+            className="md:hidden text-slate-950 p-2"
             aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
             aria-controls="mobile-menu"
             aria-expanded={menuOpen}
@@ -131,183 +234,218 @@ const App: React.FC = () => {
         </div>
       </nav>
 
-      {/* Mobile Menu */}
       {menuOpen && (
         <div id="mobile-menu" role="dialog" aria-modal="true" className="fixed inset-0 z-40 bg-[#e8eaff] flex flex-col items-center justify-center gap-8 text-xl font-serif animate-fade-in">
-            {NAV_ITEMS.map((item) => (
-              <a key={item.id} href={`#${item.id}`} onClick={scrollToSection(item.id)} className="hover:text-nobel-gold transition-colors cursor-pointer uppercase">
-                {item.label}
-              </a>
-            ))}
-            <a 
-              href="https://doi.org/10.1038/s41586-024-08148-8" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              onClick={() => setMenuOpen(false)} 
-              className="px-6 py-3 bg-stone-900 text-white rounded-full shadow-lg cursor-pointer"
-            >
-              View Paper
+          {NAV_ITEMS.map((item) => (
+            <a key={item.id} href={`#${item.id}`} onClick={scrollToSection(item.id)} className="hover:text-[#4c7c96] transition-colors cursor-pointer uppercase">
+              {item.label}
             </a>
+          ))}
+          <a
+            href="#authors"
+            onClick={scrollToSection('authors')}
+            className="px-6 py-3 bg-slate-950 text-white rounded-full shadow-lg cursor-pointer"
+          >
+            AUTHORS
+          </a>
         </div>
       )}
 
-      {/* Hero Section */}
       <header className="relative h-screen flex items-center justify-center overflow-hidden">
         <HeroScene />
-        
+
         <div className="relative z-10 container mx-auto px-6 text-center">
-          <h1 className="font-serif text-5xl md:text-7xl lg:text-9xl font-medium leading-tight md:leading-[0.9] mb-8 text-stone-900 dark:text-stone-900 drop-shadow-sm">
-            Voxelbit <br/><span className="italic font-normal text-stone-600 dark:text-stone-700 text-3xl md:text-5xl block mt-4">AI for Quantum Error Correction</span>
+          <h1 className="font-serif text-4xl md:text-6xl lg:text-8xl font-medium leading-tight md:leading-[0.94] mb-8 text-slate-950 drop-shadow-sm">
+            Parcelbit
+            <span className="block italic font-normal text-stone-600 dark:text-stone-700 text-3xl md:text-5xl lg:text-6xl mt-4">
+              for Naturalistic fMRI
+            </span>
           </h1>
           <p className="max-w-2xl mx-auto text-lg md:text-xl text-stone-700 dark:text-stone-700 font-light leading-relaxed mb-12">
-            A recurrent, transformer-based neural network that learns to decode the surface code with unprecedented accuracy.
+            A CNeuroMod analysis of Friends movie-watching responses that discovers stable latent brain components, then validates them through social-action coding and targeted food-dining evidence.
           </p>
-          
+
           <div className="flex justify-center">
-             <a href="#introduction" onClick={scrollToSection('introduction')} className="group flex flex-col items-center gap-2 text-sm font-medium text-stone-500 dark:text-stone-700 hover:text-stone-900 dark:hover:text-stone-900 transition-colors cursor-pointer">
-                <span>DISCOVER</span>
-                <span className="p-2 border border-stone-300 dark:border-stone-500 rounded-full group-hover:border-stone-900 dark:group-hover:border-stone-900 transition-colors bg-white/50 dark:bg-white/45">
-                    <ArrowDown size={16} />
-                </span>
-             </a>
+            <a href="#overview" onClick={scrollToSection('overview')} className="group flex flex-col items-center gap-2 text-sm font-medium text-stone-500 dark:text-stone-700 hover:text-stone-900 dark:hover:text-stone-900 transition-colors cursor-pointer">
+              <span>DISCOVER</span>
+              <span className="p-2 border border-stone-300 dark:border-stone-500 rounded-full group-hover:border-stone-900 dark:group-hover:border-stone-900 transition-colors bg-white/50 dark:bg-white/45">
+                <ArrowDown size={16} />
+              </span>
+            </a>
           </div>
         </div>
       </header>
 
       <main>
-        {/* Introduction */}
-        <section id="introduction" className="py-24 bg-white dark:bg-[#d8dce9]">
-          <div className="container mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-12 gap-12 items-start">
-            <div className="md:col-span-4">
-              <div className="inline-block mb-3 text-xs font-bold tracking-widest text-stone-500 dark:text-stone-600 uppercase">Introduction</div>
-              <h2 className="font-serif text-4xl mb-6 leading-tight text-stone-900 dark:text-stone-900">The Noise Barrier</h2>
-              <div className="w-16 h-1 bg-nobel-gold mb-6"></div>
+        <section id="overview" className="min-h-[112vh] py-32 bg-[#020617] flex flex-col justify-center">
+          <div className="container mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+            <div className="lg:col-span-4">
+              <div className="inline-block mb-3 text-xs font-bold tracking-widest text-[#d8b46d] uppercase">Overview</div>
+              <h2 className="font-serif text-4xl md:text-5xl mb-6 leading-tight text-white">
+                Finding interpretable structure in real-world brain responses.
+              </h2>
+              <div className="w-16 h-1 bg-[#b88a44] mb-6" />
             </div>
-            <div className="md:col-span-8 text-lg text-stone-600 dark:text-stone-700 leading-relaxed space-y-6">
+            <div className="lg:col-span-8 text-lg text-slate-300 leading-relaxed space-y-6">
               <p>
-                <span className="text-5xl float-left mr-3 mt-[-8px] font-serif text-nobel-gold">B</span>uilding a large-scale quantum computer requires correcting the errors that inevitably arise in physical systems. The state of the art is the <strong>surface code</strong>, which encodes information redundantly across many physical qubits.
+                Naturalistic fMRI captures cognition in a setting closer to everyday life, but a single scene can mix faces, speech, body movement, social context, food, and narrative meaning. This capstone uses unsupervised component discovery to ask which response dimensions emerge from the neural data before applying stimulus labels.
               </p>
               <p>
-                However, interpreting the noisy signals from these codes, a task called "decoding", is a massive challenge. Complex noise effects like cross-talk and leakage confuse standard algorithms. <strong className="text-stone-900 dark:text-stone-900 font-medium">Voxelbit</strong> uses machine learning to learn these complex error patterns directly from the quantum processor, achieving accuracy far beyond human-designed algorithms.
+                The project applies 50-run consensus Bayesian non-negative matrix factorization to CNeuroMod Friends responses. Components are first discovered from fMRI time series, then matched across subjects and interpreted through HRF-aligned frame coding, transcript context, canonical network enrichment, and food-dining validation.
               </p>
+            </div>
+          </div>
+
+          <div className="container mx-auto px-6 md:px-12 mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {PROJECT_STATS.map((stat) => (
+              <div key={stat.label} className="border border-white/10 bg-white/5 rounded-lg p-6">
+                <div className="font-serif text-4xl text-white mb-2">{stat.value}</div>
+                <div className="text-xs font-bold uppercase tracking-widest text-[#d8b46d] mb-2">{stat.label}</div>
+                <p className="text-sm text-slate-300 leading-relaxed">{stat.detail}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section id="method" className="min-h-[112vh] py-32 bg-[#E8EBFB] border-y border-[#cbd3ee] flex items-center">
+          <div className="container mx-auto px-6 md:px-12">
+            <div className="max-w-4xl mb-14">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/60 text-[#4c5f83] text-xs font-bold tracking-widest uppercase rounded-full mb-6 border border-[#cbd3ee]">
+                <BookOpen size={14} />
+                Evidence Chain
+              </div>
+              <h2 className="font-serif text-4xl md:text-5xl mb-6 text-slate-950">Discovery first, interpretation second.</h2>
+              <p className="text-lg text-slate-700 leading-relaxed">
+                The NMF model never sees food labels, social labels, transcripts, or network assignments during decomposition. Those labels enter only after stable components have been discovered and matched across participants.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-12 items-center">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {METHOD_STEPS.map((step) => {
+                  const Icon = step.icon;
+                  return (
+                    <div key={step.title} className="bg-white/75 border border-[#cbd3ee] rounded-lg p-6 shadow-sm">
+                      <Icon size={24} className="text-[#4c7c96] mb-5" />
+                      <h3 className="font-serif text-2xl text-slate-950 mb-3">{step.title}</h3>
+                      <p className="text-sm text-slate-700 leading-relaxed">{step.body}</p>
+                    </div>
+                  );
+                })}
+              </div>
+              <EvidenceChainDiagram />
             </div>
           </div>
         </section>
 
-        {/* The Science: Surface Code */}
-        <section id="science" className="py-24 bg-white dark:bg-[#d8dce9] border-t border-stone-100 dark:border-[#aeb4c6]">
-            <div className="container mx-auto px-6">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-                    <div>
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-stone-100 dark:bg-[#c9cedf] text-stone-600 dark:text-stone-700 text-xs font-bold tracking-widest uppercase rounded-full mb-6 border border-stone-200 dark:border-[#aeb4c6]">
-                            <BookOpen size={14}/> THE SYSTEM
-                        </div>
-                        <h2 className="font-serif text-4xl md:text-5xl mb-6 text-stone-900 dark:text-stone-900">The Surface Code</h2>
-                        <p className="text-lg text-stone-600 dark:text-stone-700 mb-6 leading-relaxed">
-                           In a surface code, "Data Qubits" hold the quantum information, while "Stabilizer Qubits" interspersed between them act as watchdogs. They measure parity checks (X and Z type) to detect errors without destroying the quantum state.
-                        </p>
-                        <p className="text-lg text-stone-600 dark:text-stone-700 mb-6 leading-relaxed">
-                            When a data qubit flips, adjacent stabilizers light up. The pattern of these lights is the "syndrome." The decoder's job is to look at the syndrome and guess which data qubit flipped.
-                        </p>
-                    </div>
-                    <div>
-                        <SurfaceCodeDiagram />
-                    </div>
+        <section className="min-h-[112vh] py-32 bg-slate-950 text-slate-100 overflow-hidden relative flex items-center">
+          <div className="absolute inset-0 opacity-20 pointer-events-none bg-[radial-gradient(circle_at_20%_20%,#4c7c96_0,transparent_35%),radial-gradient(circle_at_80%_70%,#b88a44_0,transparent_32%)]" />
+          <div className="container mx-auto px-6 md:px-12 relative z-10">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+              <ComponentMatrixDiagram />
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 text-[#d8b46d] text-xs font-bold tracking-widest uppercase rounded-full mb-6 border border-white/10">
+                  <Layers size={14} />
+                  Component Space
                 </div>
+                <h2 className="font-serif text-4xl md:text-5xl mb-6 text-white">Each rank joins a time course with a cortical footprint.</h2>
+                <p className="text-lg text-slate-300 mb-6 leading-relaxed">
+                  Bayesian NMF estimates temporal profiles showing when a component activates and parcel weights showing where it is expressed. Cross-subject matching turns subject-specific components into ranked component groups.
+                </p>
+                <p className="text-lg text-slate-300 leading-relaxed">
+                  The strongest interpretation comes from converging evidence: temporal reproducibility, network enrichment, HRF-aligned stimulus content, and targeted validation tests.
+                </p>
+              </div>
             </div>
+          </div>
         </section>
 
-        {/* The Science: Transformer Decoder */}
-        <section className="py-24 bg-stone-900 dark:bg-[#7a8096] text-stone-100 overflow-hidden relative">
-            <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-                {/* Decorative background pattern - Gold/Stone theme */}
-                <div className="w-96 h-96 rounded-full bg-stone-600 blur-[100px] absolute top-[-100px] left-[-100px]"></div>
-                <div className="w-96 h-96 rounded-full bg-nobel-gold blur-[100px] absolute bottom-[-100px] right-[-100px]"></div>
+        <section id="findings" className="min-h-[112vh] py-32 bg-[#e8eaff] flex items-center">
+          <div className="container mx-auto px-6 md:px-12">
+            <div className="max-w-4xl mx-auto text-center mb-14">
+              <div className="inline-block mb-3 text-xs font-bold tracking-widest text-slate-500 uppercase">Main Findings</div>
+              <h2 className="font-serif text-4xl md:text-5xl mb-6 text-slate-950">The clearest recovered dimensions are social, action-related, and contextual.</h2>
+                <p className="text-lg text-slate-600 leading-relaxed">
+                Response-first coding of 6,000 high-response and control frames identified FDR-supported associations in the retained component space.
+              </p>
             </div>
 
-            <div className="container mx-auto px-6 relative z-10">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-                     <div className="order-2 lg:order-1">
-                        <TransformerDecoderDiagram />
-                     </div>
-                     <div className="order-1 lg:order-2">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-stone-800 text-nobel-gold text-xs font-bold tracking-widest uppercase rounded-full mb-6 border border-stone-700">
-                            THE INNOVATION
-                        </div>
-                        <h2 className="font-serif text-4xl md:text-5xl mb-6 text-white">Neural Decoding</h2>
-                        <p className="text-lg text-stone-400 mb-6 leading-relaxed">
-                            Standard decoders assume simple, independent errors. Real hardware is messier. Voxelbit treats decoding as a sequence prediction problem, using a <strong>Recurrent Transformer</strong> architecture.
-                        </p>
-                        <p className="text-lg text-stone-400 leading-relaxed">
-                            It ingests the history of stabilizer measurements and uses "soft" analog information, probabilities rather than just binary 0s and 1s, to make highly informed predictions about logical errors.
-                        </p>
-                     </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-14">
+              {FINDING_CARDS.map((finding) => (
+                <div key={finding.rank} className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
+                  <div className="text-xs font-bold uppercase tracking-widest text-[#4c7c96] mb-3">{finding.rank}</div>
+                  <h3 className="font-serif text-2xl text-slate-950 mb-4">{finding.title}</h3>
+                  <div className="font-mono text-xl text-[#8d5a97] mb-3">{finding.metric}</div>
+                  <p className="text-sm text-slate-600 leading-relaxed">{finding.detail}</p>
                 </div>
+              ))}
             </div>
+
+            <FindingsMetricDiagram />
+          </div>
         </section>
 
-        {/* The Science: Results */}
-        <section className="py-24 bg-[#e8eaff] dark:bg-[#c7cbdb]">
-            <div className="container mx-auto px-6">
-                <div className="max-w-4xl mx-auto text-center mb-12">
-                    <h2 className="font-serif text-4xl md:text-5xl mb-6 text-stone-900 dark:text-stone-900">Outperforming the Standard</h2>
-                    <p className="text-lg text-stone-600 dark:text-stone-700 leading-relaxed">
-                        Voxelbit was tested on Google's Sycamore processor and accurate simulations. It consistently outperforms "Minimum-Weight Perfect Matching" (MWPM), the industry standard, effectively making the quantum computer appear cleaner than it actually is.
-                    </p>
+        <section id="food" className="min-h-[112vh] py-32 bg-[#020617] border-t border-white/10 flex items-center">
+          <div className="container mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            <div className="lg:col-span-5 relative">
+              <div className="aspect-square bg-white/5 rounded-lg overflow-hidden relative border border-white/10 shadow-inner">
+                <BrainNetworkScene />
+                <div className="absolute bottom-4 left-0 right-0 text-center text-xs text-slate-300 font-serif italic">
+                  Component-weight visualization for food-dining validation
                 </div>
-                <div className="max-w-3xl mx-auto">
-                    <PerformanceMetricDiagram />
-                </div>
+              </div>
             </div>
+            <div className="lg:col-span-7">
+              <div className="inline-flex items-center gap-2 mb-3 text-xs font-bold tracking-widest text-[#d8b46d] uppercase">
+                <Utensils size={15} className="text-[#b88a44]" />
+                Targeted Food-Dining Validation
+              </div>
+              <h2 className="font-serif text-4xl md:text-5xl mb-6 text-white">A two-layer food result, not a simple food-object claim.</h2>
+              <p className="text-lg text-slate-300 mb-6 leading-relaxed">
+                The final stimulus-first food-dining set contains 3,660 manually reviewed positive frames. The split separates 2,637 visible-food frames from 1,023 cup-only dining-context frames.
+              </p>
+              <p className="text-lg text-slate-300 mb-8 leading-relaxed">
+                Visible-food frames support Rank 4 as the Visual-dominant food-related candidate. Cup-only dining-context frames strongly support Rank 2, consistent with a DefaultMode narrative-social dining-context component.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="p-5 bg-white/5 border border-white/10 rounded-lg border-l-4 border-l-[#4c7c96]">
+                  <div className="font-serif text-3xl text-white mb-1">2,637</div>
+                  <div className="text-xs font-bold uppercase tracking-widest text-slate-300">Visible-food frames</div>
+                </div>
+                <div className="p-5 bg-white/5 border border-white/10 rounded-lg border-l-4 border-l-[#b88a44]">
+                  <div className="font-serif text-3xl text-white mb-1">1,023</div>
+                  <div className="text-xs font-bold uppercase tracking-widest text-slate-300">Cup-only context</div>
+                </div>
+                <div className="p-5 bg-white/5 border border-white/10 rounded-lg border-l-4 border-l-[#8d5a97]">
+                  <div className="font-serif text-3xl text-white mb-1">4.76x</div>
+                  <div className="text-xs font-bold uppercase tracking-widest text-slate-300">Rank 4 target-zone enrichment</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </section>
 
-        {/* Impact */}
-        <section id="impact" className="py-24 bg-white dark:bg-[#d8dce9] border-t border-stone-200 dark:border-[#aeb4c6]">
-             <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-12">
-                <div className="md:col-span-5 relative">
-                    <div className="aspect-square bg-[#f0f2ff] dark:bg-[#c9cedf] rounded-xl overflow-hidden relative border border-stone-200 dark:border-[#aeb4c6] shadow-inner">
-                        <QuantumComputerScene />
-                        <div className="absolute bottom-4 left-0 right-0 text-center text-xs text-stone-400 dark:text-stone-700 font-serif italic">Simulation of the Sycamore Processor environment</div>
-                    </div>
-                </div>
-                <div className="md:col-span-7 flex flex-col justify-center">
-                    <div className="inline-block mb-3 text-xs font-bold tracking-widest text-stone-500 dark:text-stone-600 uppercase">IMPACT</div>
-                    <h2 className="font-serif text-4xl mb-6 text-stone-900 dark:text-stone-900">Towards Fault Tolerance</h2>
-                    <p className="text-lg text-stone-600 dark:text-stone-700 mb-6 leading-relaxed">
-                        Voxelbit maintains its advantage even as the code distance increases (up to distance 11). It handles realistic noise including cross-talk and leakage, effects that often cripple standard decoders.
-                    </p>
-                    <p className="text-lg text-stone-600 dark:text-stone-700 mb-8 leading-relaxed">
-                        By learning from data directly, machine learning decoders can adapt to the unique quirks of each quantum processor, potentially reducing the hardware requirements for useful quantum computing.
-                    </p>
-                    
-                    <div className="p-6 bg-[#F9F8F4] dark:bg-[#e2e5ef] border border-stone-200 dark:border-[#aeb4c6] rounded-lg border-l-4 border-l-nobel-gold">
-                        <p className="font-serif italic text-xl text-stone-800 dark:text-stone-900 mb-4">
-                            "Our work illustrates the ability of machine learning to go beyond human-designed algorithms by learning from data directly, highlighting machine learning as a strong contender for decoding in quantum computers."
-                        </p>
-                        <span className="text-sm font-bold text-stone-500 dark:text-stone-600 tracking-wider uppercase">- Bausch et al., Nature (2024)</span>
-                    </div>
-                </div>
-             </div>
-        </section>
+        <section id="authors" className="min-h-[112vh] py-32 bg-[#e8eaff] border-t border-stone-300 flex items-center">
+          <div className="container mx-auto px-6 -mt-10">
+            <div className="text-center mb-28">
+              <div className="inline-block mb-3 text-xs font-bold tracking-widest text-stone-500 uppercase">Research Team</div>
+              <h2 className="font-serif text-3xl md:text-5xl mb-4 text-stone-900">Key Contributors</h2>
+            </div>
 
-        {/* Authors */}
-        <section id="authors" className="py-24 bg-[#f0f2ff] dark:bg-[#c7cbdb] border-t border-stone-300 dark:border-[#aeb4c6]">
-           <div className="container mx-auto px-6">
-                <div className="text-center mb-16">
-                    <div className="inline-block mb-3 text-xs font-bold tracking-widest text-stone-500 dark:text-stone-600 uppercase">RESEARCH TEAM</div>
-                    <h2 className="font-serif text-3xl md:text-5xl mb-4 text-stone-900 dark:text-stone-900">Key Contributors</h2>
-                    <p className="text-stone-500 dark:text-stone-700 max-w-2xl mx-auto">A collaboration between Google DeepMind and Google Quantum AI.</p>
-                </div>
-                
-                <div className="flex flex-col md:flex-row gap-8 justify-center items-center flex-wrap">
-                    {AUTHOR_CARDS.map((author) => (
-                      <AuthorCard key={author.name} name={author.name} role={author.role} delay={author.delay} />
-                    ))}
-                </div>
-                <div className="text-center mt-12">
-                    <p className="text-stone-500 dark:text-stone-700 italic">And many others contributing to hardware, theory, and engineering.</p>
-                </div>
-           </div>
+            <div className="flex flex-col md:flex-row gap-10 justify-center items-center flex-wrap">
+              {AUTHOR_CARDS.map((author) => (
+                <AuthorCard
+                  key={author.name}
+                  name={author.name}
+                  role={author.role}
+                  website={author.website}
+                  avatar={'avatar' in author ? author.avatar : undefined}
+                  delay={author.delay}
+                />
+              ))}
+            </div>
+          </div>
         </section>
 
       </main>

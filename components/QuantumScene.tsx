@@ -5,7 +5,7 @@
 
 import React, { useEffect, useMemo, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, MeshDistortMaterial, Sphere, Torus, Cylinder, Stars, Environment, Box } from '@react-three/drei';
+import { Float, MeshDistortMaterial, Sphere, Torus, Cylinder, Stars, Box } from '@react-three/drei';
 import * as THREE from 'three';
 
 const QuantumParticle = ({ position, color, scale = 1 }: { position: [number, number, number]; color: string; scale?: number }) => {
@@ -319,7 +319,6 @@ export const HeroScene: React.FC = () => {
           ))}
         </Float>
 
-        <Environment preset="studio" />
       </Canvas>
     </div>
   );
@@ -332,8 +331,6 @@ export const QuantumComputerScene: React.FC = () => {
         <ambientLight intensity={1} />
         <spotLight position={[5, 5, 5]} angle={0.3} penumbra={1} intensity={2} color="#C5A059" />
         <pointLight position={[-5, -5, -5]} intensity={0.5} />
-        <Environment preset="studio" />
-        
         <Float rotationIntensity={0.4} floatIntensity={0.2} speed={1}>
           <group rotation={[0, 0, 0]} position={[0, 0.5, 0]}>
             {/* Main Cryostat Structure (Gold Chandelier) */}
@@ -393,3 +390,5 @@ export const QuantumComputerScene: React.FC = () => {
     </div>
   );
 }
+
+export const BrainNetworkScene = QuantumComputerScene;

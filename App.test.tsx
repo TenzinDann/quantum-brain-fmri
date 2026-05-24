@@ -5,13 +5,13 @@ import App from './App';
 
 vi.mock('./components/QuantumScene', () => ({
   HeroScene: () => <div data-testid="hero-scene" />,
-  QuantumComputerScene: () => <div data-testid="quantum-computer-scene" />,
+  BrainNetworkScene: () => <div data-testid="brain-network-scene" />,
 }));
 
 vi.mock('./components/Diagrams', () => ({
-  SurfaceCodeDiagram: () => <div data-testid="surface-code-diagram" />,
-  TransformerDecoderDiagram: () => <div data-testid="transformer-decoder-diagram" />,
-  PerformanceMetricDiagram: () => <div data-testid="performance-metric-diagram" />,
+  EvidenceChainDiagram: () => <div data-testid="evidence-chain-diagram" />,
+  ComponentMatrixDiagram: () => <div data-testid="component-matrix-diagram" />,
+  FindingsMetricDiagram: () => <div data-testid="findings-metric-diagram" />,
 }));
 
 describe('App', () => {
@@ -26,10 +26,11 @@ describe('App', () => {
   it('renders hero content and key sections', () => {
     render(<App />);
 
-    expect(screen.getByRole('heading', { name: /voxelbit/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /the noise barrier/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /towards fault tolerance/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: /parcelbit/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /finding interpretable structure/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /two-layer food result/i })).toBeInTheDocument();
     expect(screen.getByTestId('hero-scene')).toBeInTheDocument();
+    expect(screen.getByTestId('brain-network-scene')).toBeInTheDocument();
   });
 
   it('opens and closes mobile navigation menu', () => {
