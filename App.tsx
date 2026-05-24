@@ -3,8 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useEffect, useState } from 'react';
-import { HeroScene, BrainNetworkScene } from './components/QuantumScene';
+import React, { Suspense, useEffect, useState } from 'react';
 import { ComponentMatrixDiagram, EvidenceChainDiagram, FindingsMetricDiagram } from './components/Diagrams';
 import {
   ArrowDown,
@@ -18,9 +17,16 @@ import {
   X,
 } from 'lucide-react';
 
+const LazyHeroScene = React.lazy(() =>
+  import('./components/QuantumScene').then((module) => ({
+    default: module.HeroScene,
+  })),
+);
+
 const NAV_ITEMS = [
   { id: 'overview', label: 'Overview' },
   { id: 'method', label: 'Method' },
+  { id: 'component-space', label: 'Components' },
   { id: 'findings', label: 'Findings' },
   { id: 'food', label: 'Food Validation' },
 ] as const;
@@ -93,6 +99,14 @@ const AUTHOR_CARDS = [
   { name: 'Ruicheng Yang', role: '', website: 'https://richardyang8.github.io/', delay: '0.1s' },
 ] as const;
 
+const FOOD_VALIDATION_RESULTS = [
+  { label: ['Broad', 'Rank 2'], q: 0.003, r: '0.0154', n: '3296', color: '#6f9224' },
+  { label: ['Broad', 'Rank 4'], q: 0.003, r: '0.0187', n: '3296', color: '#2f8a61' },
+  { label: ['Visible food', 'Rank 4'], q: 0.012, r: '0.0122', n: '2273', color: '#3475b7' },
+  { label: ['Dining', 'context', 'Rank 2'], q: 0.006, r: '0.0166', n: '1023', color: '#bd7c1d' },
+  { label: ['Dining', 'context', 'Rank 4'], q: 0.006, r: '0.0159', n: '1023', color: '#dda62d' },
+] as const;
+
 const AuthorCard = ({
   name,
   role,
@@ -131,6 +145,117 @@ const AuthorCard = ({
         <p className="text-xs text-white/80 font-bold uppercase tracking-widest text-center leading-relaxed">{role}</p>
       ) : null}
     </a>
+  );
+};
+
+const FoodValidationChart = () => {
+  const width = 860;
+  const height = 620;
+  const margin = { top: 102, right: 44, bottom: 142, left: 108 };
+  const chartWidth = width - margin.left - margin.right;
+  const chartHeight = height - margin.top - margin.bottom;
+  const maxY = 3.25;
+  const threshold = -Math.log10(0.05);
+  const barGap = 30;
+  const barWidth = (chartWidth - barGap * (FOOD_VALIDATION_RESULTS.length - 1)) / FOOD_VALIDATION_RESULTS.length;
+  const ticks = [0, 1, 2, 3];
+  const yForValue = (value: number) => margin.top + chartHeight - (value / maxY) * chartHeight;
+
+  return (
+    <figure className="rounded-lg border border-white/10 bg-white/[0.035] p-5 shadow-inner">
+      <div className="mb-4 flex items-start justify-between gap-4">
+        <div>
+          <div className="text-xs font-bold uppercase tracking-widest text-[#d8b46d]">Notebook Figure</div>
+          <h3 className="mt-1 font-serif text-2xl text-white">Targeted food-dining validation</h3>
+        </div>
+        <div className="flex items-center gap-2 text-xs font-medium text-slate-300">
+          <span className="h-px w-8 border-t-2 border-dashed border-slate-400" />
+          q = 0.05
+        </div>
+      </div>
+
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        role="img"
+        aria-label="Bar chart showing targeted food-dining validation significance values by condition and rank."
+        className="h-auto w-full overflow-visible"
+      >
+        <rect x="0" y="0" width={width} height={height} fill="transparent" />
+
+        {ticks.map((tick) => {
+          const y = yForValue(tick);
+          return (
+            <g key={tick}>
+              <line x1={margin.left} x2={width - margin.right} y1={y} y2={y} stroke="rgba(226,232,240,0.12)" strokeWidth="1" />
+              <text x={margin.left - 22} y={y + 5} textAnchor="end" fill="#cbd5e1" fontSize="18">
+                {tick.toFixed(1)}
+              </text>
+            </g>
+          );
+        })}
+
+        <line
+          x1={margin.left}
+          x2={width - margin.right}
+          y1={yForValue(threshold)}
+          y2={yForValue(threshold)}
+          stroke="#94a3b8"
+          strokeWidth="3"
+          strokeDasharray="10 8"
+          opacity="0.82"
+        />
+        <line x1={margin.left} x2={margin.left} y1={margin.top} y2={margin.top + chartHeight} stroke="#e2e8f0" strokeWidth="2" opacity="0.75" />
+        <line x1={margin.left} x2={width - margin.right} y1={margin.top + chartHeight} y2={margin.top + chartHeight} stroke="#e2e8f0" strokeWidth="2" opacity="0.75" />
+
+        <text
+          x={28}
+          y={margin.top + chartHeight / 2}
+          transform={`rotate(-90 28 ${margin.top + chartHeight / 2})`}
+          textAnchor="middle"
+          fill="#e2e8f0"
+          fontSize="20"
+          fontWeight="600"
+        >
+          -log10(FDR q)
+        </text>
+
+        {FOOD_VALIDATION_RESULTS.map((bar, index) => {
+          const value = -Math.log10(bar.q);
+          const x = margin.left + index * (barWidth + barGap);
+          const y = yForValue(value);
+          const barHeight = margin.top + chartHeight - y;
+          const labelX = x + barWidth / 2;
+          return (
+            <g key={`${bar.label.join('-')}-${bar.q}`}>
+              <rect x={x} y={y} width={barWidth} height={barHeight} rx="4" fill={bar.color} />
+              <text x={labelX} y={y - 62} textAnchor="middle" fill="#f8fafc" fontSize="15" fontWeight="600">
+                q={bar.q.toFixed(4)}
+              </text>
+              <text x={labelX} y={y - 40} textAnchor="middle" fill="#e2e8f0" fontSize="15">
+                r={bar.r}
+              </text>
+              <text x={labelX} y={y - 19} textAnchor="middle" fill="#cbd5e1" fontSize="15">
+                n={bar.n}
+              </text>
+              {bar.label.map((labelLine, labelIndex) => (
+                <text
+                  key={labelLine}
+                  x={labelX}
+                  y={margin.top + chartHeight + 36 + labelIndex * 21}
+                  textAnchor="middle"
+                  fill={labelIndex === 0 ? '#e2e8f0' : '#cbd5e1'}
+                  fontSize={labelIndex === 0 ? '16' : '15'}
+                  fontWeight={labelIndex === 0 ? '600' : '500'}
+                >
+                  {labelLine}
+                </text>
+              ))}
+            </g>
+          );
+        })}
+      </svg>
+
+    </figure>
   );
 };
 
@@ -252,7 +377,9 @@ const App: React.FC = () => {
       )}
 
       <header className="relative h-screen flex items-center justify-center overflow-hidden">
-        <HeroScene />
+        <Suspense fallback={<div className="absolute inset-0 z-0 bg-[#E8EAFD]" />}>
+          <LazyHeroScene />
+        </Suspense>
 
         <div className="relative z-10 container mx-auto px-6 text-center">
           <h1 className="font-serif text-4xl md:text-6xl lg:text-8xl font-medium leading-tight md:leading-[0.94] mb-8 text-slate-950 drop-shadow-sm">
@@ -338,7 +465,7 @@ const App: React.FC = () => {
           </div>
         </section>
 
-        <section className="min-h-[112vh] py-32 bg-slate-950 text-slate-100 overflow-hidden relative flex items-center">
+        <section id="component-space" className="min-h-[112vh] py-32 bg-slate-950 text-slate-100 overflow-hidden relative flex items-center">
           <div className="absolute inset-0 opacity-20 pointer-events-none bg-[radial-gradient(circle_at_20%_20%,#4c7c96_0,transparent_35%),radial-gradient(circle_at_80%_70%,#b88a44_0,transparent_32%)]" />
           <div className="container mx-auto px-6 md:px-12 relative z-10">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
@@ -387,15 +514,10 @@ const App: React.FC = () => {
 
         <section id="food" className="min-h-[112vh] py-32 bg-[#020617] border-t border-white/10 flex items-center">
           <div className="container mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            <div className="lg:col-span-5 relative">
-              <div className="aspect-square bg-white/5 rounded-lg overflow-hidden relative border border-white/10 shadow-inner">
-                <BrainNetworkScene />
-                <div className="absolute bottom-4 left-0 right-0 text-center text-xs text-slate-300 font-serif italic">
-                  Component-weight visualization for food-dining validation
-                </div>
-              </div>
+            <div className="lg:col-span-6 relative">
+              <FoodValidationChart />
             </div>
-            <div className="lg:col-span-7">
+            <div className="lg:col-span-6">
               <div className="inline-flex items-center gap-2 mb-3 text-xs font-bold tracking-widest text-[#d8b46d] uppercase">
                 <Utensils size={15} className="text-[#b88a44]" />
                 Targeted Food-Dining Validation
@@ -429,8 +551,8 @@ const App: React.FC = () => {
         <section id="authors" className="min-h-[112vh] py-32 bg-[#e8eaff] border-t border-stone-300 flex items-center">
           <div className="container mx-auto px-6 -mt-10">
             <div className="text-center mb-28">
-              <div className="inline-block mb-3 text-xs font-bold tracking-widest text-stone-500 uppercase">Research Team</div>
-              <h2 className="font-serif text-3xl md:text-5xl mb-4 text-stone-900">Key Contributors</h2>
+              <div className="inline-block mb-3 text-xs font-bold tracking-widest text-stone-500 uppercase">Contributors</div>
+              <h2 className="font-serif text-3xl md:text-5xl mb-4 text-stone-900">Research Team</h2>
             </div>
 
             <div className="flex flex-col md:flex-row gap-10 justify-center items-center flex-wrap">

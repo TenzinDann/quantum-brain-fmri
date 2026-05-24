@@ -5,35 +5,8 @@
 
 import React, { useEffect, useMemo, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, MeshDistortMaterial, Sphere, Torus, Cylinder, Stars, Box } from '@react-three/drei';
+import { Float } from '@react-three/drei';
 import * as THREE from 'three';
-
-const QuantumParticle = ({ position, color, scale = 1 }: { position: [number, number, number]; color: string; scale?: number }) => {
-  const ref = useRef<THREE.Mesh>(null);
-  
-  useFrame((state) => {
-    if (ref.current) {
-      const t = state.clock.getElapsedTime();
-      ref.current.position.y = position[1] + Math.sin(t * 2 + position[0]) * 0.2;
-      ref.current.rotation.x = t * 0.5;
-      ref.current.rotation.z = t * 0.3;
-    }
-  });
-
-  return (
-    <Sphere ref={ref} args={[1, 32, 32]} position={position} scale={scale}>
-      <MeshDistortMaterial
-        color={color}
-        envMapIntensity={1}
-        clearcoat={1}
-        clearcoatRoughness={0}
-        metalness={0.5}
-        distort={0.4}
-        speed={2}
-      />
-    </Sphere>
-  );
-};
 
 const QuantumBrain = () => {
   const groupRef = useRef<THREE.Group>(null);
@@ -323,72 +296,3 @@ export const HeroScene: React.FC = () => {
     </div>
   );
 };
-
-export const QuantumComputerScene: React.FC = () => {
-  return (
-    <div className="w-full h-full absolute inset-0">
-      <Canvas camera={{ position: [0, 0, 4.5], fov: 45 }}>
-        <ambientLight intensity={1} />
-        <spotLight position={[5, 5, 5]} angle={0.3} penumbra={1} intensity={2} color="#C5A059" />
-        <pointLight position={[-5, -5, -5]} intensity={0.5} />
-        <Float rotationIntensity={0.4} floatIntensity={0.2} speed={1}>
-          <group rotation={[0, 0, 0]} position={[0, 0.5, 0]}>
-            {/* Main Cryostat Structure (Gold Chandelier) */}
-            
-            {/* Top Plate */}
-            <Cylinder args={[1.2, 1.2, 0.1, 64]} position={[0, 1, 0]}>
-              <meshStandardMaterial color="#C5A059" metalness={1} roughness={0.15} />
-            </Cylinder>
-            
-            {/* Middle Stage */}
-            <Cylinder args={[1, 1, 0.1, 64]} position={[0, 0.2, 0]}>
-              <meshStandardMaterial color="#C5A059" metalness={1} roughness={0.15} />
-            </Cylinder>
-            
-            {/* Bottom Stage (Mixing Chamber) */}
-            <Cylinder args={[0.6, 0.6, 0.1, 64]} position={[0, -0.6, 0]}>
-              <meshStandardMaterial color="#C5A059" metalness={1} roughness={0.15} />
-            </Cylinder>
-
-            {/* Connecting Rods */}
-            <Cylinder args={[0.04, 0.04, 0.8, 16]} position={[0.5, 0.6, 0]}>
-               <meshStandardMaterial color="#D1D5DB" metalness={0.8} roughness={0.2} />
-            </Cylinder>
-            <Cylinder args={[0.04, 0.04, 0.8, 16]} position={[-0.5, 0.6, 0]}>
-               <meshStandardMaterial color="#D1D5DB" metalness={0.8} roughness={0.2} />
-            </Cylinder>
-             <Cylinder args={[0.04, 0.04, 0.8, 16]} position={[0, 0.6, 0.5]}>
-               <meshStandardMaterial color="#D1D5DB" metalness={0.8} roughness={0.2} />
-            </Cylinder>
-             <Cylinder args={[0.04, 0.04, 0.8, 16]} position={[0, 0.6, -0.5]}>
-               <meshStandardMaterial color="#D1D5DB" metalness={0.8} roughness={0.2} />
-            </Cylinder>
-
-             {/* Lower Rods */}
-             <Cylinder args={[0.03, 0.03, 0.8, 16]} position={[0.2, -0.2, 0]}>
-               <meshStandardMaterial color="#D1D5DB" metalness={0.8} roughness={0.2} />
-            </Cylinder>
-            <Cylinder args={[0.03, 0.03, 0.8, 16]} position={[-0.2, -0.2, 0]}>
-               <meshStandardMaterial color="#D1D5DB" metalness={0.8} roughness={0.2} />
-            </Cylinder>
-
-            {/* Coils/Wires - Copper colored */}
-            <Torus args={[0.7, 0.015, 16, 64]} position={[0, -0.2, 0]} rotation={[Math.PI/2, 0, 0]}>
-               <meshStandardMaterial color="#B87333" metalness={0.8} roughness={0.3} />
-            </Torus>
-             <Torus args={[0.3, 0.015, 16, 64]} position={[0, -1, 0]} rotation={[Math.PI/2, 0, 0]}>
-               <meshStandardMaterial color="#B87333" metalness={0.8} roughness={0.3} />
-            </Torus>
-            
-            {/* Central processor chip simulation at bottom */}
-            <Box args={[0.2, 0.05, 0.2]} position={[0, -0.7, 0]}>
-                <meshStandardMaterial color="#111" metalness={0.9} roughness={0.1} />
-            </Box>
-          </group>
-        </Float>
-      </Canvas>
-    </div>
-  );
-}
-
-export const BrainNetworkScene = QuantumComputerScene;
