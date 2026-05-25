@@ -89,22 +89,23 @@ const FINDING_CARDS = [
 ] as const;
 
 const AUTHOR_CARDS = [
+  { name: 'Meenakshi Khosla', role: '', website: 'https://www.meenakshikhosla.com/', delay: '0s' },
   {
     name: 'Cairang Danzeng',
     role: '',
     website: 'https://tenzindann.github.io/',
     avatar: `${import.meta.env.BASE_URL}cairang-danzeng-avatar.gif`,
-    delay: '0s',
+    delay: '0.1s',
   },
-  { name: 'Ruicheng Yang', role: '', website: 'https://richardyang8.github.io/', delay: '0.1s' },
+  { name: 'Ruicheng Yang', role: '', website: 'https://richardyang8.github.io/', delay: '0.2s' },
 ] as const;
 
 const FOOD_VALIDATION_RESULTS = [
-  { label: ['Broad', 'Rank 2'], q: 0.003, r: '0.0154', n: '3296', color: '#6f9224' },
-  { label: ['Broad', 'Rank 4'], q: 0.003, r: '0.0187', n: '3296', color: '#2f8a61' },
-  { label: ['Visible food', 'Rank 4'], q: 0.012, r: '0.0122', n: '2273', color: '#3475b7' },
-  { label: ['Dining', 'context', 'Rank 2'], q: 0.006, r: '0.0166', n: '1023', color: '#bd7c1d' },
-  { label: ['Dining', 'context', 'Rank 4'], q: 0.006, r: '0.0159', n: '1023', color: '#dda62d' },
+  { label: ['Broad', 'Rank 2'], q: 0.002997, r: '0.0173', n: '3660', color: '#6f9224' },
+  { label: ['Broad', 'Rank 4'], q: 0.002997, r: '0.0212', n: '3660', color: '#2f8a61' },
+  { label: ['Visible food', 'Rank 4'], q: 0.011988, r: '0.0146', n: '2637', color: '#3475b7' },
+  { label: ['Dining', 'context', 'Rank 2'], q: 0.005994, r: '0.0166', n: '1023', color: '#bd7c1d' },
+  { label: ['Dining', 'context', 'Rank 4'], q: 0.005994, r: '0.0159', n: '1023', color: '#dda62d' },
 ] as const;
 
 const AuthorCard = ({
