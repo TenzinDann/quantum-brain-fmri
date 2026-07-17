@@ -89,15 +89,13 @@ const FINDING_CARDS = [
 ] as const;
 
 const AUTHOR_CARDS = [
-  { name: 'Meenakshi Khosla', role: '', website: 'https://www.meenakshikhosla.com/', delay: '0s' },
   {
-    name: 'Cairang Danzeng',
+    name: 'Danzeng Cairang',
     role: '',
     website: 'https://tenzindann.github.io/',
     avatar: `${import.meta.env.BASE_URL}cairang-danzeng-avatar.gif`,
-    delay: '0.1s',
+    delay: '0s',
   },
-  { name: 'Ruicheng Yang', role: '', website: 'https://richardyang8.github.io/', delay: '0.2s' },
 ] as const;
 
 const FOOD_VALIDATION_RESULTS = [
@@ -343,7 +341,7 @@ const App: React.FC = () => {
               onClick={scrollToSection('authors')}
               className="px-5 py-2 bg-slate-950 text-white rounded-full hover:bg-slate-800 transition-colors shadow-sm cursor-pointer"
             >
-              AUTHORS
+              AUTHOR
             </a>
           </div>
 
@@ -372,7 +370,7 @@ const App: React.FC = () => {
             onClick={scrollToSection('authors')}
             className="px-6 py-3 bg-slate-950 text-white rounded-full shadow-lg cursor-pointer"
           >
-            AUTHORS
+            AUTHOR
           </a>
         </div>
       )}
@@ -550,10 +548,10 @@ const App: React.FC = () => {
         </section>
 
         <section id="authors" className="min-h-[112vh] py-32 bg-[#e8eaff] border-t border-stone-300 flex items-center">
-          <div className="container mx-auto px-6 -mt-10">
-            <div className="text-center mb-28">
-              <div className="inline-block mb-3 text-xs font-bold tracking-widest text-stone-500 uppercase">Contributors</div>
-              <h2 className="font-serif text-3xl md:text-5xl mb-4 text-stone-900">Research Team</h2>
+          <div className="container mx-auto px-6 -mt-28">
+            <div className="text-center mb-16">
+              <div className="inline-block mb-3 text-xs font-bold tracking-widest text-stone-500 uppercase">Contributor</div>
+              <h2 className="font-serif text-3xl md:text-5xl mb-4 text-stone-900">AUTHOR</h2>
             </div>
 
             <div className="flex flex-col md:flex-row gap-10 justify-center items-center flex-wrap">
