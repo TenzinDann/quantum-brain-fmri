@@ -548,13 +548,13 @@ const App: React.FC = () => {
         </section>
 
         <section id="authors" className="min-h-[112vh] py-32 bg-[#e8eaff] border-t border-stone-300 flex items-center">
-          <div className="container mx-auto px-6 -mt-28">
+          <div className="container mx-auto px-6 -mt-12">
             <div className="text-center mb-16">
               <div className="inline-block mb-3 text-xs font-bold tracking-widest text-stone-500 uppercase">Contributor</div>
               <h2 className="font-serif text-3xl md:text-5xl mb-4 text-stone-900">AUTHOR</h2>
             </div>
 
-            <div className="flex flex-col md:flex-row gap-10 justify-center items-center flex-wrap">
+            <div className="flex flex-col gap-8 justify-center items-center">
               {AUTHOR_CARDS.map((author) => (
                 <AuthorCard
                   key={author.name}
@@ -565,6 +565,12 @@ const App: React.FC = () => {
                   delay={author.delay}
                 />
               ))}
+              <p className="max-w-3xl text-center text-sm font-normal leading-7 text-stone-700 md:text-base md:leading-8">
+                I'm an AI Engineer with a Sociology and
+                Anthropology background — my work spans sociolinguistics and social-science research on one side, and
+                applied AI, agent systems, and multimodal machine learning on the other. Off the clock, I fix computers
+                and bikes, and make music and the occasional game mod. 😁
+              </p>
             </div>
           </div>
         </section>
